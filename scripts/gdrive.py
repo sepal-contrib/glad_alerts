@@ -2,7 +2,6 @@
 
 import ee
 import io
-import numpy as np
 from googleapiclient.http import MediaIoBaseDownload
 from apiclient import discovery
 
