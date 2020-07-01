@@ -15,6 +15,15 @@ class gdrive(object):
         self.initialize = ee.Initialize()
         self.credentials = ee.Credentials()
         self.service = discovery.build(serviceName='drive', version='v3', cache_discovery=False, credentials=self.credentials)
+        
+    def tasks_list(self):
+        """for debugging purpose, print the list of all the tasks in gee"""
+        service = self.service
+        
+        tasks = service.tasks().list(tasklist='@default').execute()
+
+        for task in tasks['items']:
+          print(task['title'])
 
 
     def print_file_list(self):
