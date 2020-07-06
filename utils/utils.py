@@ -9,7 +9,6 @@ ee.Initialize()
 #messages 
 STATUS = "Status : {0}"
 
-
 def create_FIPS_dic():
     """create the list of the country code in the FIPS norm using the CSV file provided in utils
         
@@ -17,7 +16,7 @@ def create_FIPS_dic():
         fips_dic (dic): the country FIPS_codes labelled with english country names
     """
      
-    pathname = os.path.join(os.path.expanduser('~'), 'Glad/utils/') + 'FIPS_code_to_country.csv'
+    pathname = os.path.join(os.path.dirname(__file__), 'FIPS_code_to_country.csv')
     fips_dic = {}
     with open(pathname, newline='') as f:
         reader = csv.reader(f, delimiter=';')
