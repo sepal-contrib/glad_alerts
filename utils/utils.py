@@ -82,7 +82,7 @@ def construct_filename(asset_name, year):
         filename (str): the filename to save the Tif files
     """
     aoi_name = set_aoi_name(asset_name)
-    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-2" #remove test when it will be in production 
+    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-3" #remove test when it will be in production 
     
     return filename
 

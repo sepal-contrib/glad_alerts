@@ -41,7 +41,7 @@ def update_map(m, dc, asset_name):
         asset_name (str): the asset ID in gee assets
     """
     m.centerObject(ee.FeatureCollection(asset_name), zoom=4)
-    m.addLayer(ee.FeatureCollection(asset_name), {'color': 'green'})
+    m.addLayer(ee.FeatureCollection(asset_name), {'color': 'red'})
     dc.clear()
     m.remove_control(dc)
     
