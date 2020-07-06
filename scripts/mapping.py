@@ -12,7 +12,7 @@ def init_map():
         m (Map): a map
     '''
     center = [0, 0]
-    zoom = 1
+    zoom = 2
 
     dc = geemap.DrawControl(
         marker={},
@@ -25,7 +25,7 @@ def init_map():
 
     m = geemap.Map(center=center, zoom=zoom)
     basemap_layer = geemap.basemap_to_tiles(geemap.basemaps.Esri.WorldImagery)
-    m.clear_layers()
+    #m.clear_layers()
     m.clear_controls()
     m.add_layer(basemap_layer)
     m.add_control(geemap.ZoomControl(position='topright'))

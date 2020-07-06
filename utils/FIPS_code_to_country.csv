@@ -1,4 +1,4 @@
-﻿AF;Afghanistan
+AF;Afghanistan
 AX;Akrotiri
 AL;Albania
 AG;Algeria
@@ -255,7 +255,6 @@ UP;Ukraine
 AE;United Arab Emirates
 UK;United Kingdom
 US;United States
--;United States Minor Outlying Islands
 UY;Uruguay
 UZ;Uzbekistan
 NH;Vanuatu
@@ -264,15 +263,10 @@ VE;Venezuela
 VM;Vietnam
 VI;Virgin Islands, British
 VQ;Virgin Islands, U.S.
--;Virgin Islands (UK)
--;Virgin Islands (US)
 WQ;Wake Island
 WF;Wallis and Futuna
 WE;West Bank
 WI;Western Sahara
--;Western Samoa
--;World
 YM;Yemen
--;Zaire
 ZA;Zambia
 ZI;Zimbabwe

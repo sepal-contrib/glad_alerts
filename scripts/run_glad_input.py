@@ -17,6 +17,7 @@ NAME_USED = "The name was already in used, change it or delete the previous asse
 NO_ASSET = "No Asset have been provided"
 CHECK_IF_ASSET = "Check carefully that your string is an assetId"
 NOT_AVAILABLE = "This function is not yet available"
+NO_SHAPE = "No shape have been drawn on the map"
 
 
 def isAsset(asset_descripsion, folder):
@@ -37,7 +38,7 @@ def isAsset(asset_descripsion, folder):
             break
     return exist    
 
-def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing_method, widget_alert, list_method):
+def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing_method, widget_alert, list_method, m, drawn_feat):
     """ compute the AOI for the step 1 of the GLAD alert module
 
     Args:
@@ -48,6 +49,8 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         drawing_method (str): the name of the method selected to create the asset
         widget_alert (v.Alert): the widget used to display the process informations
         list_method ([str]): list of the method use to select an AOI
+        m (geemap.Map) : the map to draw the shape
+        drawn_feat (ee.FeatureCollection): the last drawn object on the map
         
     Returns:
         asset (str) : the AssetId of the AOI
@@ -66,55 +69,64 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         if country_selection == None:
             utils.displayIO(widget_alert, 'warning', NO_COUNTRY) 
             asset = None
-        else:
-            asset_descripsion = 'Glad_{0}'.format(re.sub('[^a-zA-Z\d]', '_', country_selection)) 
-            asset = folder + asset_descripsion
+            return
+        
+        asset_descripsion = 'Glad_{0}'.format(re.sub('[^a-zA-Z\d]', '_', country_selection)) 
+        asset = folder + asset_descripsion
             
-            #check asset existence
-            if isAsset(asset_descripsion, folder):
-                utils.displayIO(widget_alert, 'info', ASSET_ALREADY_EXIST.format(asset))
-            else:
-                country_code = utils.create_FIPS_dic()[country_selection] 
-                country = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_co', country_code))
+        #check asset existence
+        if isAsset(asset_descripsion, folder):
+            utils.displayIO(widget_alert, 'info', ASSET_ALREADY_EXIST.format(asset))
+            return
+        
+        country_code = utils.create_FIPS_dic()[country_selection] 
+        country = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_co', country_code))
                 
-                #create and launch the task
-                task_config = {
-                    'collection': country, 
-                    'description':asset_descripsion,
-                    'assetId': asset
-                }
-                task = ee.batch.Export.table.toAsset(**task_config)
-                task.start()
-                utils.wait_for_completion(asset_descripsion, widget_alert)
+        #create and launch the task
+        task_config = {
+            'collection': country, 
+            'description':asset_descripsion,
+            'assetId': asset
+        }
+        task = ee.batch.Export.table.toAsset(**task_config)
+        task.start()
+        utils.wait_for_completion(asset_descripsion, widget_alert)
   
-                utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
+        utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
                 
     elif drawing_method == list_method[1]: #draw a shape
      
-        aoi = ee.FeatureCollection(m.draw_features)
+        aoi = drawn_feat 
         asset_name = "Glad_{0}".format(file_name.replace(' ', '_'))
+        
+        #check if something is drawn 
+        if drawn_feat == None:
+            asset = None
+            utils.displayIO(widget_alert, 'error', NO_SHAPE)
+            return
       
         #check asset existence
         if isAsset(asset_name, folder):
             asset = None
             utils.displayIO(widget_alert, 'error', NAME_USED)
-        else:
-            asset_name = re.sub('[^a-zA-Z\d]', '_', asset_name)
-            asset = folder + asset_name
+            return 
+        
+        asset_name = re.sub('[^a-zA-Z\d]', '_', asset_name)
+        asset = folder + asset_name
             
-            #create and launch the task
-            task_config = {
-                'collection': aoi, 
-                'description':asset_name,
-                'assetId': asset
-            }
-            task = ee.batch.Export.table.toAsset(**task_config)
-            task.start()
-            utils.wait_for_completion(asset_name, widget_alert)
+        #create and launch the task
+        task_config = {
+            'collection': aoi, 
+            'description':asset_name,
+            'assetId': asset
+        }
+        task = ee.batch.Export.table.toAsset(**task_config)
+        task.start()
+        utils.wait_for_completion(asset_name, widget_alert)
            
-            utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))           
+        utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))           
             
-    elif drawing_method == list_method[2]: #use GEE asset
+    elif drawing_method == list_method[3]: #use GEE asset
         
         #verify that there is an asset
         if asset_name == '' or asset_name == None:
@@ -124,7 +136,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             asset = asset_name
             utils.displayIO(widget_alert, 'info', CHECK_IF_ASSET)
             
-    elif drawing_method == list_method[3]: #upload file
+    elif drawing_method == list_method[2]: #upload file
         
         ee_object = geemap.shp_to_ee(file_input)
         asset_name = "Glad_" + re.sub('[^a-zA-Z\d]','_',file_name)
