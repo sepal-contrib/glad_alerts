@@ -1,6 +1,7 @@
 import ee
 import time
 import sys
+import re
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 
@@ -66,7 +67,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'warning', NO_COUNTRY) 
             asset = None
         else:
-            asset_descripsion = 'Glad_{0}'.format(country_selection.replace(' ', '_')) 
+            asset_descripsion = 'Glad_{0}'.format(re.sub('[^a-zA-Z\d]', '_', country_selection)) 
             asset = folder + asset_descripsion
             
             #check asset existence
@@ -98,6 +99,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             asset = None
             utils.displayIO(widget_alert, 'error', NAME_USED)
         else:
+            asset_name = re.sub('[^a-zA-Z\d]', '_', asset_name)
             asset = folder + asset_name
             
             #create and launch the task
@@ -125,7 +127,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
     elif drawing_method == list_method[3]: #upload file
         
         ee_object = geemap.shp_to_ee(file_input)
-        asset_name = "Glad_" + file_name.replace(' ', '_')
+        asset_name = "Glad_" + re.sub('[^a-zA-Z\d]','_',file_name)
         
         #check asset's name
         if isAsset(asset_name, folder):

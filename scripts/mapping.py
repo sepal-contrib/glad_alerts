@@ -24,10 +24,10 @@ def init_map():
      )
 
     m = geemap.Map(center=center, zoom=zoom)
-    dark_matter_layer = geemap.basemap_to_tiles(geemap.basemaps.CartoDB.DarkMatter)
+    basemap_layer = geemap.basemap_to_tiles(geemap.basemaps.Esri.WorldImagery)
     m.clear_layers()
     m.clear_controls()
-    m.add_layer(dark_matter_layer)
+    m.add_layer(basemap_layer)
     m.add_control(geemap.ZoomControl(position='topright'))
     
     return (dc, m)
