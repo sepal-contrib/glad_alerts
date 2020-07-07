@@ -30,6 +30,7 @@ def init_map():
     m.add_basemap('CartoDB.Positron')
     m.add_control(geemap.ZoomControl(position='topright'))
     m.add_control(geemap.LayersControl(position='topright'))
+    m.add_control(geemap.AttributionControl(position='bottomright'))
     m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
     
     return (dc, m)
