@@ -1,7 +1,9 @@
 import csv
 import ee
 import os
+from datetime import datetime
 import time
+import ipyvuetify as v
 
 #initialize earth engine
 ee.Initialize()
@@ -48,7 +50,12 @@ def displayIO(widget_alert, alert_type, message):
         alert_type = 'info'
         
     widget_alert.type = alert_type
-    widget_alert.children = [message]
+     
+    current_time = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
+    widget_alert.children = [
+        v.Html(tag='p', children=['[{0}]'.format(current_time)]),
+        v.Html(tag='p', children=[message])
+   ]
     
 def wait_for_completion(task_descripsion, widget_alert):
     """Wait until the selected process is finished. Display some output information
