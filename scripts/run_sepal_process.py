@@ -7,6 +7,7 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 from scripts import gdrive
+from threading import Thread
 
 #initialize earth engine
 ee.Initialize()
@@ -180,25 +181,45 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     #process data with otf
     pathname = utils.construct_filename(asset_name, year) + "*.tif"
-    io = merge(pathname, alert_map, glad_dir)
-    utils.displayIO(widget_alert, 'info', io)
+    
+    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir))
+    utils.displayIO(widget_alert, 'info', 'starting merging')
+    time.sleep(2)
+    t_merge.start()
+    while t_merge.is_alive():
+        utils.displayIO(widget_alert, 'info', 'status: MERGE RUNNING')
+    utils.displayIO(widget_alert, 'info', 'status: MERGE COMPLETED')
         
-    time.sleep(5)
+    time.sleep(2)
             
     io = delete_local_file(glad_dir + pathname)
     utils.displayIO(widget_alert, 'info', io)
         
     time.sleep(2)
             
-    io = clump(alert_map, clump_map)
-    utils.displayIO(widget_alert, 'info', io)
+    #io = clump(alert_map, clump_map)
+    #utils.displayIO(widget_alert, 'info', io)
+    t_clump = Thread(target=clump, args=(alert_map, clump_map))
+    utils.displayIO(widget_alert, 'info', 'starting clumping')
+    time.sleep(2)
+    t_clump.start()
+    while t_clump.is_alive():
+        utils.displayIO(widget_alert, 'info', 'status: CLUMPING RUNNING')
+    utils.displayIO(widget_alert, 'info', 'status: CLUMPING COMPLETED')
         
-    time.sleep(5)
+    time.sleep(2)
             
-    io = calc(clump_map, alert_map, alert_stats)
-    utils.displayIO(widget_alert, 'info', io)
+    #io = calc(clump_map, alert_map, alert_stats)
+    #utils.displayIO(widget_alert, 'info', io)
+    t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats))
+    utils.displayIO(widget_alert, 'info', 'starting computation')
+    time.sleep(2)
+    t_calc.start()
+    while t_calc.is_alive():
+        utils.displayIO(widget_alert, 'info', 'status: COMPUTATION RUNNING')
+    utils.displayIO(widget_alert, 'info', 'status: COMPUTATION COMPLETED')
         
-    time.sleep(5)
+    time.sleep(2)
     
     io = delete_local_file(clump_map)
     utils.displayIO(widget_alert, 'info', io)
