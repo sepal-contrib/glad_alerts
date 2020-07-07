@@ -69,7 +69,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         if country_selection == None:
             utils.displayIO(widget_alert, 'warning', NO_COUNTRY) 
             asset = None
-            return
+            return asset
         country_code = utils.create_FIPS_dic()[country_selection] 
         asset_descripsion = 'Glad_{0}'.format(country_code) 
         asset = folder + asset_descripsion
@@ -77,7 +77,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         #check asset existence
         if isAsset(asset_descripsion, folder):
             utils.displayIO(widget_alert, 'info', ASSET_ALREADY_EXIST.format(asset))
-            return
+            return asset
         
         country = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_co', country_code))
                 
@@ -90,11 +90,11 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         task = ee.batch.Export.table.toAsset(**task_config)
         task.start()
         utils.wait_for_completion(asset_descripsion, widget_alert)
-  
+          
         utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
                 
     elif drawing_method == list_method[1]: #draw a shape
-     
+             
         aoi = drawn_feat 
         asset_name = "Glad_{0}".format(file_name.replace(' ', '_'))
         
@@ -102,13 +102,13 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
         if drawn_feat == None:
             asset = None
             utils.displayIO(widget_alert, 'error', NO_SHAPE)
-            return
-      
+            return asset
+              
         #check asset existence
         if isAsset(asset_name, folder):
             asset = None
             utils.displayIO(widget_alert, 'error', NAME_USED)
-            return 
+            return asset 
         
         asset_name = re.sub('[^a-zA-Z\d]', '_', asset_name)
         asset = folder + asset_name
@@ -156,7 +156,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             task = ee.batch.Export.table.toAsset(**task_config)
             task.start()
             utils.wait_for_completion(asset_name, widget_alert)
-           
+                   
             utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
             
         #currently not usable so undo everything
