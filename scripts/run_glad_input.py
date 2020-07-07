@@ -9,6 +9,7 @@ from utils import utils
 ee.Initialize()
 
 #messages to display
+FILE_PATTERN = 'glad_{0}'
 NO_SELECTION = 'No selection method have bee picked up'
 NO_COUNTRY = 'No Country have been selected'
 ASSET_ALREADY_EXIST = "The asset was already existing you can continue to use it. It's also available at :{0}"
@@ -71,7 +72,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             asset = None
             return asset
         country_code = utils.create_FIPS_dic()[country_selection] 
-        asset_descripsion = 'Glad_{0}'.format(country_code) 
+        asset_descripsion = FILE_PATTERN.format(country_code) 
         asset = folder + asset_descripsion
             
         #check asset existence
@@ -96,7 +97,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
     elif drawing_method == list_method[1]: #draw a shape
              
         aoi = drawn_feat 
-        asset_name = "Glad_{0}".format(file_name.replace(' ', '_'))
+        asset_name = FILE_PATTERN.format(file_name.replace(' ', '_'))
         
         #check if something is drawn 
         if drawn_feat == None:
@@ -138,7 +139,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
     elif drawing_method == list_method[2]: #upload file
         
         ee_object = geemap.shp_to_ee(file_input)
-        asset_name = "Glad_" + re.sub('[^a-zA-Z\d]','_',file_name)
+        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d]','_',file_name))
         
         #check asset's name
         if isAsset(asset_name, folder):
