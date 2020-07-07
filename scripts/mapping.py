@@ -24,7 +24,7 @@ def init_map():
      )
 
     m = geemap.Map(center=center, zoom=zoom)
-    basemap_layer = geemap.basemap_to_tiles(geemap.basemaps.Esri.WorldImagery)
+    basemap_layer = geemap.basemap_to_tiles(geemap.basemaps.CartoDB.Positron)
     #m.clear_layers()
     m.clear_controls()
     m.add_layer(basemap_layer)
