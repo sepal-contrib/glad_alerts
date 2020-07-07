@@ -70,8 +70,8 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'warning', NO_COUNTRY) 
             asset = None
             return
-        
-        asset_descripsion = 'Glad_{0}'.format(re.sub('[^a-zA-Z\d]', '_', country_selection)) 
+        country_code = utils.create_FIPS_dic()[country_selection] 
+        asset_descripsion = 'Glad_{0}'.format(country_code) 
         asset = folder + asset_descripsion
             
         #check asset existence
@@ -79,7 +79,6 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'info', ASSET_ALREADY_EXIST.format(asset))
             return
         
-        country_code = utils.create_FIPS_dic()[country_selection] 
         country = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_co', country_code))
                 
         #create and launch the task
