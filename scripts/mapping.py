@@ -24,11 +24,13 @@ def init_map():
      )
 
     m = geemap.Map(center=center, zoom=zoom)
-    basemap_layer = geemap.basemap_to_tiles(geemap.basemaps.CartoDB.Positron)
-    #m.clear_layers()
+    m.clear_layers()
     m.clear_controls()
-    m.add_layer(basemap_layer)
+    m.add_basemap('Esri.WorldImagery')
+    m.add_basemap('CartoDB.Positron')
     m.add_control(geemap.ZoomControl(position='topright'))
+    m.add_control(geemap.LayersControl(position='topright'))
+    m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
     
     return (dc, m)
 
