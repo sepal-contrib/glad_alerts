@@ -47,3 +47,5 @@ def update_map(m, dc, asset_name):
     dc.clear()
     m.remove_control(dc)
     
+            
+    
