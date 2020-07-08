@@ -22,8 +22,9 @@ def create_FIPS_dic():
     fips_dic = {}
     with open(pathname, newline='') as f:
         reader = csv.reader(f, delimiter=';')
+        next(reader)
         for row in reader:
-            fips_dic[row[1]] = row[0]
+            fips_dic[row[1]] = row[3]
         
     return fips_dic
 
