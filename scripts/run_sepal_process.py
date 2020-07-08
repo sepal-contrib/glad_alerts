@@ -153,6 +153,9 @@ def run_sepal_process(asset_name, year, widget_alert):
         asset_name (str): the assetId of the aoi computed in step 1
         year (str): the year used to compute the glad alerts
         widget_alert (v.Alert) the alert that display the output of the process
+        
+    Returns:
+        (str,str): the links to the .tif (res. .txt) file 
     """
     
     aoi_name= utils.set_aoi_name(asset_name)
@@ -169,12 +172,12 @@ def run_sepal_process(asset_name, year, widget_alert):
     #check that the Gee process is finished
     if not utils.search_task(filename):
         utils.displayIO(widget_alert, 'error', NO_TASK)
-        return
+        return ('#', '#')
         
     #check that the process is not already done
     if check_for_stats(alert_stats):
         utils.displayIO(widget_alert, 'success', ALREADY_DONE)
-        return
+        return (create_download_link(alert_map), create_download_link(alert_stats))
     
     #download from GEE
     download_task_tif(filename, glad_dir)
@@ -197,8 +200,6 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
             
-    #io = clump(alert_map, clump_map)
-    #utils.displayIO(widget_alert, 'info', io)
     t_clump = Thread(target=clump, args=(alert_map, clump_map))
     utils.displayIO(widget_alert, 'info', 'starting clumping')
     time.sleep(2)
@@ -209,8 +210,6 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
             
-    #io = calc(clump_map, alert_map, alert_stats)
-    #utils.displayIO(widget_alert, 'info', io)
     t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats))
     utils.displayIO(widget_alert, 'info', 'starting computation')
     time.sleep(2)
@@ -227,3 +226,14 @@ def run_sepal_process(asset_name, year, widget_alert):
     time.sleep(2)
     
     utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
+    
+    return (create_download_link(alert_map), create_download_link(alert_stats))
+    
+def create_download_link(pathname):
+    result_path = os.path.expanduser(pathname)
+    home_path = os.path.expanduser('~')
+    download_path='/'+os.path.relpath(result_path,home_path)
+    
+    link = "/api/files/download?path={}".format(download_path)
+    
+    return link
