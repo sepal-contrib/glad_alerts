@@ -97,7 +97,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
     elif drawing_method == list_method[1]: #draw a shape
              
         aoi = drawn_feat 
-        asset_name = FILE_PATTERN.format(file_name.replace(' ', '_'))
+        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d\-\_]', '_', file_name))
         
         #check if something is drawn 
         if drawn_feat == None:
@@ -111,7 +111,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'error', NAME_USED)
             return asset 
         
-        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d]', '_', asset_name))
+       # asset_name = re.sub('[^a-zA-Z\d\-\_\:]', '_', asset_name)
         asset = folder + asset_name
             
         #create and launch the task
