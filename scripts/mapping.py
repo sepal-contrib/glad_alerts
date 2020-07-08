@@ -54,19 +54,6 @@ def update_map(m, dc, asset_name):
     except:
         pass
     
-def distance(c1, c2):
-    """compute the distance (in km) between to coordinates
-    
-    Args:
-        c1, c2 ([lng,lat]): the two coordinates following the gee format
-        
-    Returns: 
-        distance (float): the distance between these two points
-    """
-    p = pi/180
-    a = 0.5 - cos((c2[1]-c1[1])*p)/2 + cos(c1[1]*p) * cos(c2[1]*p) * (1-cos((c2[0]-c2[1])*p))/2
-    return 12742 * asin(sqrt(a)) # 2 * R; R = 6371 km
-    
 def update_zoom(asset_id):
     """search for the dimension of the AOI and adapt the map zoom acordingly
     
