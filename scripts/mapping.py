@@ -1,5 +1,8 @@
 import geemap
 import ee 
+from math import cos, asin, sqrt, pi
+import numpy as np
+from haversine import haversine
 
 #initialize earth engine
 ee.Initialize()
@@ -42,11 +45,86 @@ def update_map(m, dc, asset_name):
         m (Map): a map
         dc (DrawControl): the drawcontrol to be removed
         asset_name (str): the asset ID in gee assets
-    """
-    m.centerObject(ee.FeatureCollection(asset_name), zoom=4)
+    """  
+    m.centerObject(ee.FeatureCollection(asset_name), zoom=update_zoom(asset_name))
     m.addLayer(ee.FeatureCollection(asset_name), {'color': 'green'}, name='aoi')
     dc.clear()
-    m.remove_control(dc)
+    try:
+        m.remove_control(dc)
+    except:
+        pass
+    
+def distance(c1, c2):
+    """compute the distance (in km) between to coordinates
+    
+    Args:
+        c1, c2 ([lng,lat]): the two coordinates following the gee format
+        
+    Returns: 
+        distance (float): the distance between these two points
+    """
+    p = pi/180
+    a = 0.5 - cos((c2[1]-c1[1])*p)/2 + cos(c1[1]*p) * cos(c2[1]*p) * (1-cos((c2[0]-c2[1])*p))/2
+    return 12742 * asin(sqrt(a)) # 2 * R; R = 6371 km
+    
+def update_zoom(asset_id):
+    """search for the dimension of the AOI and adapt the map zoom acordingly
+    
+    Args: 
+        asset_id (str): the assetID
+    
+    Returns: 
+        zoom (int): the zoom value riquired
+    """
+    
+    #retreive the asset 
+    geom = ee.FeatureCollection(asset_id).geometry()
+    coordinates = geom.getInfo()["coordinates"]
+    #transform into a single list of all the coordinates
+    shape = []
+    get_coords(coordinates, shape)
+    #in the coordinates search for the 4 cardinal points of the aoi
+    #gee format coords [lng, lat]
+    count = 0 
+    for coords in shape: #perimeter of each shape
+        count += 1
+        if count == 1:
+            north = coords
+            east = coords
+            south = coords
+            west = coords
+            continue
+            
+        if coords[0] < west[0]:
+            west = coords
+        if coords[0] > east[0]:
+            east = coords
+        if coords[1] < south[1]:
+            south = coords
+        if coords[1] > north[1]:
+            north = coords
+
+    maxsize = max(haversine(east, west), haversine(north, south))
+    
+    lg = 40075 #number of displayed km at zoom 1
+    zoom = 1
+    while lg > maxsize:
+        zoom += 1
+        lg /= 2
+        
+    return zoom-1
+
+def get_coords(coordinates, array_coord=[]):
+    """get all the coordinates and set them in a single table without knowing in advance the depth of the tab"""
+    if isinstance(coordinates[0], float):
+        array_coord.append((coordinates[0], coordinates[1]))
+        return array_coord
+    
+    for item in coordinates:
+        get_coords(item,array_coord)
+
+
+
     
             
     
