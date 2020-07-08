@@ -9,7 +9,7 @@ from utils import utils
 ee.Initialize()
 
 #messages to display
-FILE_PATTERN = 'glad_{0}'
+FILE_PATTERN = 'aoi_{0}'
 NO_SELECTION = 'No selection method have bee picked up'
 NO_COUNTRY = 'No Country have been selected'
 ASSET_ALREADY_EXIST = "The asset was already existing you can continue to use it. It's also available at :{0}"
@@ -111,7 +111,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'error', NAME_USED)
             return asset 
         
-        asset_name = re.sub('[^a-zA-Z\d]', '_', asset_name)
+        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d]', '_', asset_name))
         asset = folder + asset_name
             
         #create and launch the task
@@ -138,6 +138,11 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             
     elif drawing_method == list_method[2]: #upload file
         
+        #currently not usable so undo everything
+        asset = None
+        utils.displayIO(widget_alert, 'error',NOT_AVAILABLE)
+        return asset
+        
         ee_object = geemap.shp_to_ee(file_input)
         asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d]','_',file_name))
         
@@ -159,9 +164,5 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.wait_for_completion(asset_name, widget_alert)
                    
             utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
-            
-        #currently not usable so undo everything
-        asset = None
-        utils.displayIO(widget_alert, 'error',NOT_AVAILABLE)
             
     return asset

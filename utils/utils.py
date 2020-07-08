@@ -75,7 +75,7 @@ def wait_for_completion(task_descripsion, widget_alert):
 
 def set_aoi_name(asset_name):
     """Return the corresponding aoi_name from an assetId"""
-    return os.path.split(asset_name)[1].replace('glad_','')
+    return os.path.split(asset_name)[1].replace('aoi_','')
 
 def construct_filename(asset_name, year):
     """return the filename associated with the current task
@@ -88,7 +88,7 @@ def construct_filename(asset_name, year):
         filename (str): the filename to save the Tif files
     """
     aoi_name = set_aoi_name(asset_name)
-    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-3" #remove test when it will be in production 
+    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-4" #remove test when it will be in production 
     
     return filename
 
