@@ -25,8 +25,12 @@ def create_FIPS_dic():
         next(reader)
         for row in reader:
             fips_dic[row[1]] = row[3]
+            
+        fips_sorted = {}
+        for key in sorted(fips_dic):
+            fips_sorted[key] = fips_dic[key]
         
-    return fips_dic
+    return fips_sorted
 
 def toggleLoading(btn):
     """Toggle the loading state for a given btn in the ipyvutify lib
