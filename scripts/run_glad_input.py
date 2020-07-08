@@ -2,6 +2,8 @@ import ee
 import time
 import sys
 import re
+import os
+import geemap
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 
@@ -19,6 +21,7 @@ NO_ASSET = "No Asset have been provided"
 CHECK_IF_ASSET = "Check carefully that your string is an assetId"
 NOT_AVAILABLE = "This function is not yet available"
 NO_SHAPE = "No shape have been drawn on the map"
+ERROR_OCCURED = "An error occured with provided .shp file"
 
 
 def isAsset(asset_descripsion, folder):
@@ -137,14 +140,19 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'info', CHECK_IF_ASSET)
             
     elif drawing_method == list_method[2]: #upload file
+        home_path = os.path.expanduser('~')
+        file_input = home_path + '/' + file_input
+        print(file_input)
+        try:
+            ee_object = geemap.shp_to_ee(file_input)
+        except:
+            utils.displayIO(widget_alert, 'error', ERROR_OCCURED)
+            asset = None
+            return asset
         
-        #currently not usable so undo everything
-        asset = None
-        utils.displayIO(widget_alert, 'error',NOT_AVAILABLE)
-        return asset
+        name = os.path.split(file_input)[1]
         
-        ee_object = geemap.shp_to_ee(file_input)
-        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d]','_',file_name))
+        asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d\-\_]','_',name))
         
         #check asset's name
         if isAsset(asset_name, folder):
