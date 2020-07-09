@@ -6,17 +6,17 @@ from bqplot import *
 import sys
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
+import csv
 
-def display_graph(asset_name, year):
-    
-    #inizialize the plot
-    #fig_hist = Figure()
+def display_results(asset_name, year):
     
     glad_dir = utils.create_result_folder()
     aoi_name = utils.get_aoi_name(asset_name) 
     alert_stats = glad_dir + "stats_glad_" + year + "_" + aoi_name + ".txt"
     
     data = np.loadtxt(alert_stats, delimiter=' ')
+    
+    alert_csv = create_csv(data, aoi_name, glad_dir, year)
     
     bins=30
 
@@ -63,15 +63,13 @@ def display_graph(asset_name, year):
     fig_hist.layout.height = 'auto'
     fig_hist.layout.min_height = '300px' # so it still shows nicely in the notebook
 
-    aoi_name = utils.get_aoi_name(asset_name)
-    folder = utils.create_result_folder()
-    filepath = folder + 'hist_' + aoi_name + '_' + year + '.png'
+    filepath = glad_dir + 'hist_' + aoi_name + '_' + year + '.png'
     
     if not utils.check_for_file(filepath):
         #fig_hist.save_png(filepath)
         create_png(data_hist, labels, colors, bins, max(maxY4,maxY5), title, filepath)
     
-    return (fig_hist, utils.create_download_link(filepath))
+    return (fig_hist, utils.create_download_link(filepath), utils.create_download_link(alert_csv))
 
 def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     """useless function that create a matplotlib file because bqplot cannot yet export without a popup
@@ -93,3 +91,63 @@ def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     plt.ylabel('number of pixels')
 
     plt.savefig(filepath)   # save the figure to file
+    
+def create_csv(data, aoi_name, glad_dir, year):
+    
+    #need to confirm who's who
+    Y_conf = data[:,5]
+    Y_conf = np.ma.masked_equal(Y_conf,0).compressed()
+    unique, counts = np.unique(Y_conf, return_counts=True)
+    conf_dict = dict(zip(unique, counts))
+    #null if all the alerts have been confirmed
+    Y_prob = data[:,4]
+    Y_prob = np.ma.masked_equal(Y_prob,0).compressed()
+    
+    
+    prob = None
+    if not Y_prob == []:
+        unique, counts = np.unique(Y_prob, return_counts=True)
+        prob_dict = dict(zip(unique, counts))
+        
+        #add missing keys to conf
+        conf_dict = complete_dict(conf_dict, prob_dict) 
+                
+        #add missing keys to prob
+        prob_dict = complete_dict(prob_dict, conf_dict)
+                
+        prob = ['potential alerts']
+        for key in prob_dict:
+            prob.append(prob_dict[key])
+        
+    
+    header = ['patch size']
+    conf = ['confirmed alerts']
+    for key in conf_dict: 
+        header.append('{:d}'.format(int(key)))
+        conf.append(conf_dict[key])
+    
+    filename = glad_dir + 'distrib_' + aoi_name + '_' + year + '.csv'
+    if utils.check_for_file(filename):
+        return filename
+    
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+        writer.writerow(conf)
+        if prob:
+           writer.writerow(prob) 
+    
+    return filename
+                        
+def complete_dict(first_dict, second_dict):
+    """complete the first dict with the missing keys from the second dict. thos keys values are set to 0. return a sorted dict
+    """
+    for key in second_dict:
+            if not key in first_dict.keys():
+                first_dict[key] = 0 
+            
+    sorted_dict = {}
+    for key in sorted(first_dict):
+        sorted_dict[key] = first_dict[key]
+                        
+    return sorted_dict
