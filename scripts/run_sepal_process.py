@@ -134,17 +134,6 @@ def delete_local_file(pathname):
         
     return "{0} files deleted".format(count)
 
-def check_for_stats(filename):
-    """return the file corresponding to the pathname else False
-    
-    Args:
-        filename (str): expected pathname of the file
-      
-    Returns:
-        (str) : the pathname if found else False
-    """
-    return glob.glob(filename)
-
 
 def run_sepal_process(asset_name, year, widget_alert):
     """execute the 3 different operations of the computation successively: merg, clump and compute
@@ -158,7 +147,7 @@ def run_sepal_process(asset_name, year, widget_alert):
         (str,str): the links to the .tif (res. .txt) file 
     """
     
-    aoi_name= utils.set_aoi_name(asset_name)
+    aoi_name= utils.get_aoi_name(asset_name)
         
     #define the files variables
     glad_dir = utils.create_result_folder()
@@ -175,9 +164,9 @@ def run_sepal_process(asset_name, year, widget_alert):
         return ('#', '#')
         
     #check that the process is not already done
-    if check_for_stats(alert_stats):
+    if utils.check_for_file(alert_stats):
         utils.displayIO(widget_alert, 'success', ALREADY_DONE)
-        return (create_download_link(alert_map), create_download_link(alert_stats))
+        return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
     #download from GEE
     download_task_tif(filename, glad_dir)
@@ -227,13 +216,5 @@ def run_sepal_process(asset_name, year, widget_alert):
     
     utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
     
-    return (create_download_link(alert_map), create_download_link(alert_stats))
+    return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
-def create_download_link(pathname):
-    result_path = os.path.expanduser(pathname)
-    home_path = os.path.expanduser('~')
-    download_path='/'+os.path.relpath(result_path,home_path)
-    
-    link = "/api/files/download?path={}".format(download_path)
-    
-    return link

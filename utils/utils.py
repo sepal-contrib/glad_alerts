@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 import time
 import ipyvuetify as v
+import glob
 
 #initialize earth engine
 ee.Initialize()
@@ -78,7 +79,7 @@ def wait_for_completion(task_descripsion, widget_alert):
         current_task = search_task(task_descripsion)
         state = current_task.state
 
-def set_aoi_name(asset_name):
+def get_aoi_name(asset_name):
     """Return the corresponding aoi_name from an assetId"""
     return os.path.split(asset_name)[1].replace('aoi_','')
 
@@ -92,7 +93,7 @@ def construct_filename(asset_name, year):
     Returns:
         filename (str): the filename to save the Tif files
     """
-    aoi_name = set_aoi_name(asset_name)
+    aoi_name = get_aoi_name(asset_name)
     filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-4" #remove test when it will be in production 
     
     return filename
@@ -128,4 +129,24 @@ def create_result_folder():
         os.makedirs(glad_dir)
     
     return glad_dir
+
+def create_download_link(pathname):
+    result_path = os.path.expanduser(pathname)
+    home_path = os.path.expanduser('~')
+    download_path='/'+os.path.relpath(result_path,home_path)
+    
+    link = "/api/files/download?path={}".format(download_path)
+    
+    return link
+
+def check_for_file(filename):
+    """return the file corresponding to the pathname else False
+    
+    Args:
+        filename (str): expected pathname of the file
+      
+    Returns:
+        (str) : the pathname if found else False
+    """
+    return glob.glob(filename)
       

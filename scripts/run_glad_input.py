@@ -80,7 +80,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             
         #check asset existence
         if isAsset(asset_descripsion, folder):
-            utils.displayIO(widget_alert, 'info', ASSET_ALREADY_EXIST.format(asset))
+            utils.displayIO(widget_alert, 'success', ASSET_ALREADY_EXIST.format(asset))
             return asset
         
         country = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_co', country_code))
