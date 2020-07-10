@@ -7,7 +7,7 @@ For more information please refer to:
 - Hansen et al. (2016) Humid tropical forest disturbance alerts using Landsat data. Environmental Research Letters 11 034008
 - University of Maryland, GLAD alert dataset
 
-> ajouter video
+![results](./doc/img/full_input.png)
 
 ## Usage
 
@@ -23,7 +23,7 @@ After verifying that the task is completed on Google earth engine drive, launchi
 ### Results
 The module allows you to display an histogram of the Glad alerts patches, download the raster and a .csv file of the results
 
-> add images for SN
+![results](./doc/img/full_results.png)
 
 for more information about usage please read the [documentation](doc/doc.md)
 
