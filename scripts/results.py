@@ -6,7 +6,13 @@ from bqplot import *
 import sys
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
+from scripts import run_gee_process
+from scripts import mapping
 import csv
+import geemap
+import ee
+
+ee.Initialize()
 
 def display_results(asset_name, year):
     
@@ -94,7 +100,6 @@ def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     
 def create_csv(data, aoi_name, glad_dir, year):
     
-    #need to confirm who's who
     Y_conf = data[:,5]
     Y_conf = np.ma.masked_equal(Y_conf,0).compressed()
     unique, counts = np.unique(Y_conf, return_counts=True)
@@ -102,24 +107,19 @@ def create_csv(data, aoi_name, glad_dir, year):
     #null if all the alerts have been confirmed
     Y_prob = data[:,4]
     Y_prob = np.ma.masked_equal(Y_prob,0).compressed()
-    
-    
-    prob = None
-    if not Y_prob == []:
-        unique, counts = np.unique(Y_prob, return_counts=True)
-        prob_dict = dict(zip(unique, counts))
+    unique, counts = np.unique(Y_prob, return_counts=True)
+    prob_dict = dict(zip(unique, counts))
         
-        #add missing keys to conf
-        conf_dict = complete_dict(conf_dict, prob_dict) 
+    #add missing keys to conf
+    conf_dict = complete_dict(conf_dict, prob_dict) 
                 
-        #add missing keys to prob
-        prob_dict = complete_dict(prob_dict, conf_dict)
+    #add missing keys to prob
+    prob_dict = complete_dict(prob_dict, conf_dict)
                 
-        prob = ['potential alerts']
-        for key in prob_dict:
-            prob.append(prob_dict[key])
-        
-    
+    prob = ['potential alerts']
+    for key in prob_dict:
+        prob.append(prob_dict[key])
+            
     header = ['patch size']
     conf = ['confirmed alerts']
     for key in conf_dict: 
@@ -134,8 +134,7 @@ def create_csv(data, aoi_name, glad_dir, year):
         writer = csv.writer(file)
         writer.writerow(header)
         writer.writerow(conf)
-        if prob:
-           writer.writerow(prob) 
+        writer.writerow(prob) 
     
     return filename
                         
@@ -151,3 +150,33 @@ def complete_dict(first_dict, second_dict):
         sorted_dict[key] = first_dict[key]
                         
     return sorted_dict
+
+def display_alerts(aoi_name, year, m):
+    """dipslay the selected alerts on the geemap
+    currently re-computing the alerts on the fly because geemap is faster to use ee interface than reading a .tif file
+    """
+    aoi = ee.FeatureCollection(aoi_name)
+    alerts = run_gee_process.get_alerts(aoi_name, year)
+    alertsMasked = alerts.updateMask(alerts.gt(0));
+    
+    m.addLayer(alertsMasked, {'bands':["conf20"], 'min':2, 'max':3, 'palette':['d32f2f', 'ffeb3b']}, 'alerts') 
+    
+    #Create an empty image into which to paint the features, cast to byte.
+    empty = ee.Image().byte()
+    #Paint all the polygon edges with the same number and width, display.
+    outline = empty.paint(**{
+        'featureCollection': aoi,
+        'color': 1,
+        'width': 3
+    })
+    m.addLayer(outline, {'palette': '283593'}, 'aoi')
+                 
+    m.centerObject(aoi, zoom=mapping.update_zoom(aoi_name))
+    
+    legend_keys = ['confirmed alerts', 'potential alerts']
+    legend_colors = ['d32f2f', 'ffeb3b']
+    
+    m.add_legend(legend_keys=legend_keys, legend_colors=legend_colors, position='topleft')
+                 
+    
+    
