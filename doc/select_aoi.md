@@ -9,7 +9,7 @@ On this initial card, select the method you want to use to select your AOI. you 
 Once you reach the `country boundarie` value in the dropdown and select it, a new dropdown appears. 
 here you can select a country name in the list provided. They correspond to every available country in the LSIB list. 
 
-After validating your country the map will zoom on the country you've have validated and will create an aoi_[country_code] asset on your GEE account. It will be available for other projects.
+After validating your country the map will zoom on the country you've validated and will create an aoi_[country_code] asset on your GEE account. It will be available for other projects.
 
 > :warning: The output can select the wrong country, before validating your selection please verify in the blue alert that the `selected country` is the one you want to use. If wrong try to select it again.
 
@@ -27,7 +27,7 @@ Once you have select `draw a shape` in the dropdown, two new input will appears:
  
  > :warning: Multiple geomtries could lead to various bug or crash. If needed please consider running your analysis in two steps
  
-After validating your country the map will zoom on the AOI you've have validated and will create an aoi_[filename] asset on your GEE account. It will be available for other projects.
+After validating your shape the map will zoom on the AOI you've validated and will create an aoi_[filename] asset on your GEE account. It will be available for other projects.
 
 ![draw a shape](./img/draw_shape.png)
 
@@ -52,7 +52,7 @@ Just write the pathname of your asset in your sepal folder which should look lik
 ![folder_struct](./img/filepath.png)
 ![shapefile_import](./img/shapefile.png)
 
-After validating your AOI the map will zoom on the AOI you've have validated and will create an aoi_[filename] asset on your GEE account. It will be available for other projects.
+After validating your shape the map will zoom on the AOI you've have validated and will create an aoi_[filename] asset on your GEE account. It will be available for other projects.
 
 ## 1.4 import GEE asset
 
