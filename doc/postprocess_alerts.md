@@ -16,6 +16,6 @@ by clicking on `run postprocessing`, you will launch a computation of the glad a
 ![postprocessing](./img/postprocess.png) 
 
 ---
-[ go to  &rarr; 2. Use the results](./results.md)  
+[ go to  &rarr; 4. Use the results](./results.md)  
 
-[return to &larr; Retreive the alerts](./retreive_alert.md)
+[return to &larr; 2. Retreive the alerts](./retreive_alert.md)
