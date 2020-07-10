@@ -16,9 +16,9 @@ ee.Initialize()
 
 def display_results(asset_name, year):
     
-    glad_dir = utils.create_result_folder()
+    glad_dir = utils.create_result_folder(asset_name)
     aoi_name = utils.get_aoi_name(asset_name) 
-    alert_stats = glad_dir + "stats_glad_" + year + "_" + aoi_name + ".txt"
+    alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
     
     data = np.loadtxt(alert_stats, delimiter=' ')
     
@@ -69,7 +69,7 @@ def display_results(asset_name, year):
     fig_hist.layout.height = 'auto'
     fig_hist.layout.min_height = '300px' # so it still shows nicely in the notebook
 
-    filepath = glad_dir + 'hist_' + aoi_name + '_' + year + '.png'
+    filepath = glad_dir + aoi_name + '_' + year + '_hist.png'
     
     if not utils.check_for_file(filepath):
         #fig_hist.save_png(filepath)
@@ -126,7 +126,7 @@ def create_csv(data, aoi_name, glad_dir, year):
         header.append('{:d}'.format(int(key)))
         conf.append(conf_dict[key])
     
-    filename = glad_dir + 'distrib_' + aoi_name + '_' + year + '.csv'
+    filename = glad_dir + aoi_name + '_' + year + '_distrib.csv'
     if utils.check_for_file(filename):
         return filename
     

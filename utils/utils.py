@@ -94,7 +94,7 @@ def construct_filename(asset_name, year):
         filename (str): the filename to save the Tif files
     """
     aoi_name = get_aoi_name(asset_name)
-    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-4" #remove test when it will be in production 
+    filename = aoi_name + '_' + str(year) + '_alerts' 
     
     return filename
 
@@ -117,18 +117,23 @@ def search_task(task_descripsion):
             
     return current_task
 
-def create_result_folder():
+def create_result_folder(aoiId):
     """Create a folder to download the glad images
+   
+    Args:
+        aoiId(str) : the Id to the asset
     
     Returns:
         glad_dir (str): pathname to the glad_result folder
     """
+    aoi = get_aoi_name(aoiId)
+    glad_dir = os.path.join(os.path.expanduser('~'), 'glad_results') + '/'
+        
+    pathname = glad_dir + aoi + '/'
+    if not os.path.exists(pathname):
+        os.makedirs(pathname)
     
-    glad_dir = os.path.join(os.path.expanduser('~'), 'glad_results')+'/'
-    if not os.path.exists(glad_dir):
-        os.makedirs(glad_dir)
-    
-    return glad_dir
+    return pathname
 
 def create_download_link(pathname):
     result_path = os.path.expanduser(pathname)

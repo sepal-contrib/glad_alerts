@@ -150,12 +150,12 @@ def run_sepal_process(asset_name, year, widget_alert):
     aoi_name= utils.get_aoi_name(asset_name)
         
     #define the files variables
-    glad_dir = utils.create_result_folder()
+    glad_dir = utils.create_result_folder(asset_name)
     
     #year and country_code are defined by step 1 cell
-    alert_map   = glad_dir + "glad_" +year + "_" + aoi_name + ".tif"
-    clump_map   = glad_dir + "tmp_clump_" + year + "_" + aoi_name + ".tif"
-    alert_stats = glad_dir + "stats_glad_" + year + "_" + aoi_name + ".txt"
+    alert_map   = glad_dir + aoi_name + '_' + year + '_glad.tif'
+    clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
+    alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
         
     filename = utils.construct_filename(asset_name, year)
     #check that the Gee process is finished
