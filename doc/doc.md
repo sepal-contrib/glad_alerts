@@ -1,6 +1,6 @@
 # Welcome in the user documentation 
 
-This ducumentation should explain every step  to execute the module. If any question or bug remains, please consider post it on the [bug report page](https://github.com/openforis/glad_alerts/issues/new/choose)
+This documentation should explain every step  to execute the module. If any question or bug remains, please consider post it on the [bug report page](https://github.com/openforis/glad_alerts/issues/new/choose)
 
 ## table of content
 1. [select an AOI](./select_aoi.md)  
