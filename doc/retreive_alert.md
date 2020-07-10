@@ -11,6 +11,6 @@ Once the process is completed you should obtain the following message:
 ![retreive alerts](./img/retreive_alert.png) 
 
 ---
-[ go to  &rarr; 2. Postprocess the alerts](./postprocess_alerts.md)  
+[ go to  &rarr; 3. Postprocess the alerts](./postprocess_alerts.md)  
 
 [return to &larr; select an AOI](./select_aoi.md)
