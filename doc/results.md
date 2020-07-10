@@ -12,7 +12,7 @@ By clicking on the top buttons, you can obtain the files used to display the res
  - the csv file of the alerts on the aoi, separated between confirmed and potential
  - the plot of the distribution of the alerts
  
- > :warning: **Tips:** remember that all your results output have been save on your sepal acount and live in `~/glad_result/[aoi_name]/
+ > :warning: **Tips:** remember that all your results output have been save on your sepal acount and live in ~/glad_result/[aoi_name]/
 
  **SN_2020_hist.png**
 
