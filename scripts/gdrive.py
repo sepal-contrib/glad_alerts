@@ -20,10 +20,10 @@ class gdrive(object):
         """for debugging purpose, print the list of all the tasks in gee"""
         service = self.service
         
-        tasks = service.tasks().list(tasklist='@default').execute()
+        tasks = service.tasks().list(tasklist='@default', q="trashed = false").execute()
 
         for task in tasks['items']:
-          print(task['title'])
+            print(task['title'])
 
 
     def print_file_list(self):
@@ -31,7 +31,7 @@ class gdrive(object):
         service = self.service
 
         results = service.files().list(
-            pageSize=30, fields="nextPageToken, files(id, name)").execute()
+            pageSize=50, fields="nextPageToken, files(id, name)").execute()
         items = results.get('files', [])
         if not items:
             print('No files found.')
@@ -45,9 +45,10 @@ class gdrive(object):
         service = self.service
         
         # get list of files
-        results = service.files().list( q ="mimeType='image/tiff'",
-                                        pageSize=1000, 
-                                        fields="nextPageToken, files(id, name)").execute()
+        results = service.files().list( 
+            q ="mimeType='image/tiff' and trashed = false",
+            pageSize=1000, 
+            fields="nextPageToken, files(id, name)").execute()
         items = results.get('files', [])
 
         return items

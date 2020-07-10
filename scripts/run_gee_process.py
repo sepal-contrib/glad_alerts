@@ -4,6 +4,7 @@ import time
 import sys
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
+from scripts import gdrive
 
 #initialize earth engine
 ee.Initialize()
@@ -60,11 +61,15 @@ def run_GEE_process(asset_name, year, widget_alert):
     
     #search for the task in task_list
     filename = utils.construct_filename(asset_name, year)
-    print(filename)
     current_task = utils.search_task(filename)
     
+    #search for the files in gdrive
+    drive_handler = gdrive.gdrive()
+    files = drive_handler.get_files(filename)
+    drive_handler.print_file_list()
+    
     #launch the task in GEE 
-    if current_task == None:
+    if current_task == None or files == []:
         
         alerts = get_alerts(asset_name, year)
         current_task = download_to_disk(filename, alerts, asset_name)

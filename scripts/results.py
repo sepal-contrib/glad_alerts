@@ -159,7 +159,8 @@ def display_alerts(aoi_name, year, m):
     alerts = run_gee_process.get_alerts(aoi_name, year)
     alertsMasked = alerts.updateMask(alerts.gt(0));
     
-    m.addLayer(alertsMasked, {'bands':["conf20"], 'min':2, 'max':3, 'palette':['d32f2f', 'ffeb3b']}, 'alerts') 
+    palette = ['ffeb3b', 'd32f2f']
+    m.addLayer(alertsMasked, {'bands':['conf' + year[-2:]], 'min':2, 'max':3, 'palette': palette}, 'alerts') 
     
     #Create an empty image into which to paint the features, cast to byte.
     empty = ee.Image().byte()
@@ -173,8 +174,8 @@ def display_alerts(aoi_name, year, m):
                  
     m.centerObject(aoi, zoom=mapping.update_zoom(aoi_name))
     
-    legend_keys = ['confirmed alerts', 'potential alerts']
-    legend_colors = ['d32f2f', 'ffeb3b']
+    legend_keys = ['potential alerts', 'confirmed alerts']
+    legend_colors = palette
     
     m.add_legend(legend_keys=legend_keys, legend_colors=legend_colors, position='topleft')
                  
