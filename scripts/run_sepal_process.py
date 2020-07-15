@@ -9,7 +9,6 @@ from utils import utils
 from scripts import gdrive
 from threading import Thread
 import ipyvuetify as v
-import getpass
 
 #initialize earth engine
 ee.Initialize()
@@ -152,6 +151,8 @@ def run_sepal_process(asset_name, year, widget_alert):
         (str,str): the links to the .tif (res. .txt) file 
     """
     
+    output_debug = [v.Html(tag="h3", children=['Process outputs'])]
+    
     aoi_name= utils.get_aoi_name(asset_name)
         
     #define the files variables
@@ -162,28 +163,28 @@ def run_sepal_process(asset_name, year, widget_alert):
     clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
     alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
     cwd = os.path.join(os.path.expanduser('~'), 'tmp')
+    
+    output_debug.append(v.Html(tag='p', children=["glad_dir: {}".format(glad_dir)]))
+    output_debug.append(v.Html(tag='p', children=["alert_map: {}".format(alert_map)]))
+    output_debug.append(v.Html(tag='p', children=["clump_map: {}".format(clump_map)]))
+    output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
         
     filename = utils.construct_filename(asset_name, year)
     #check that the Gee process is finished
     if not utils.search_task(filename):
         utils.displayIO(widget_alert, 'error', NO_TASK)
-        return ('#', '#')
+        return (output_debug, '#', '#')
         
     #check that the process is not already done
     if utils.check_for_file(alert_stats):
         utils.displayIO(widget_alert, 'success', ALREADY_DONE)
-        return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
+        return (output_debug, utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
     #download from GEE
     download_task_tif(filename, glad_dir)
         
     #process data with otf
-    output_debug = []
     pathname = utils.construct_filename(asset_name, year) + "*.tif"
-     
-    output_debug.append(v.Html(tag='p', children=["pathname:{}".format(pathname)]))
-    output_debug.append(v.Html(tag='p', children=["alert_map:{}".format(alert_map)]))
-    output_debug.append(v.Html(tag='p', children=["glad_dir:{}".format(glad_dir)]))
     
     t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting merging')
@@ -199,9 +200,6 @@ def run_sepal_process(asset_name, year, widget_alert):
     utils.displayIO(widget_alert, 'info', io)
         
     time.sleep(2)
-    
-    output_debug.append(v.Html(tag='p', children=["alert_map:{}".format(alert_map)]))
-    output_debug.append(v.Html(tag='p', children=["clump_map:{}".format(clump_map)]))
             
     t_clump = Thread(target=clump, args=(alert_map, clump_map, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting clumping')
@@ -212,8 +210,6 @@ def run_sepal_process(asset_name, year, widget_alert):
     utils.displayIO(widget_alert, 'info', 'status: CLUMPING COMPLETED')
         
     time.sleep(2)
-            
-    output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
     
     t_calc = Thread(target=calc, args=(cwd, clump_map, alert_map, alert_stats, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting computation')
@@ -225,20 +221,7 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
     
-    #io = delete_local_file(clump_map)
-    #utils.displayIO(widget_alert, 'info', io)
+    utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)    
     
-    time.sleep(2)
-    
-    utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
-    
-    output_debug.append(v.Html(tag='p', children=["env: {}".format(os.environ)]))
-    
-    output_debug.append(v.Html(tag='p', children=["user: {}".format(getpass.getuser())]))
-
-    
-    widget_alert.children = output_debug
-    
-    
-    return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
+    return (output_debug, utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
