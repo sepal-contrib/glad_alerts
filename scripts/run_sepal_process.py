@@ -78,7 +78,7 @@ def clump(alert_map, clump_map, output_debug):
     output_debug.append(v.Html(tag='p', children=['clump output: {}'.format(process.stdout)]))
     return process.stdout
     
-def calc(clump_map, alert_map, alert_stats, output_debug):
+def calc(cwd, clump_map, alert_map, alert_stats, output_debug):
     """Compute the statistics per each individual clump
     
     Args:
@@ -98,6 +98,7 @@ def calc(clump_map, alert_map, alert_stats, output_debug):
             '-maxval','3'
         
         ],
+        cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True
@@ -160,6 +161,7 @@ def run_sepal_process(asset_name, year, widget_alert):
     alert_map   = glad_dir + aoi_name + '_' + year + '_glad.tif'
     clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
     alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
+    cwd = os.path.join(os.path.expanduser('~'), 'tmp')
         
     filename = utils.construct_filename(asset_name, year)
     #check that the Gee process is finished
@@ -213,7 +215,7 @@ def run_sepal_process(asset_name, year, widget_alert):
             
     output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
     
-    t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats, output_debug))
+    t_calc = Thread(target=calc, args=(cwd, clump_map, alert_map, alert_stats, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting computation')
     time.sleep(2)
     t_calc.start()
