@@ -233,6 +233,7 @@ def run_sepal_process(asset_name, year, widget_alert):
     output_debug.append(v.Html(tag='p', children=["env: {}".format(os.environ)]))
     
     output_debug.append(v.Html(tag='p', children=["user: {}".format(getpass.getuser())]))
+
     
     widget_alert.children = output_debug
     
