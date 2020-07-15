@@ -8,6 +8,7 @@ sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 from scripts import gdrive
 from threading import Thread
+import ipyvuetify as v
 
 #initialize earth engine
 ee.Initialize()
@@ -19,7 +20,7 @@ ALREADY_DONE = "This computation has already been performed\nYou can find your r
 COMPUTAION_COMPLETED = "Computation complete"
 
 #function 
-def merge(filename, alert_map, glad_dir):
+def merge(filename, alert_map, glad_dir, output_debug):
     """ merge into a single tif files
     
     Args:
@@ -48,9 +49,11 @@ def merge(filename, alert_map, glad_dir):
         universal_newlines=True
     ) 
     
+    output_debug.append(v.Html(tag='p', children=['merge output: {}'.format(process.stdout)]))
+    
     return process.stdout
     
-def clump(alert_map, clump_map):
+def clump(alert_map, clump_map, output_debug):
     """ clump the results
     
     Args:
@@ -71,10 +74,10 @@ def clump(alert_map, clump_map):
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    
+    output_debug.append(v.Html(tag='p', children=['clump output: {}'.format(process.stdout)]))
     return process.stdout
     
-def calc(clump_map, alert_map, alert_stats):
+def calc(clump_map, alert_map, alert_stats, output_debug):
     """Compute the statistics per each individual clump
     
     Args:
@@ -98,7 +101,7 @@ def calc(clump_map, alert_map, alert_stats):
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    
+    output_debug.append(v.Html(tag='p', children=['hist output: {}'.format(process.stdout)]))
     return(process.stdout)  
 
 
@@ -172,9 +175,14 @@ def run_sepal_process(asset_name, year, widget_alert):
     download_task_tif(filename, glad_dir)
         
     #process data with otf
+    output_debug = []
     pathname = utils.construct_filename(asset_name, year) + "*.tif"
+     
+    output_debug.append(v.Html(tag='p', children=["pathname:{}".format(pathname)]))
+    output_debug.append(v.Html(tag='p', children=["alert_map:{}".format(alert_map)]))
+    output_debug.append(v.Html(tag='p', children=["glad_dir:{}".format(glad_dir)]))
     
-    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir))
+    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting merging')
     time.sleep(2)
     t_merge.start()
@@ -188,8 +196,11 @@ def run_sepal_process(asset_name, year, widget_alert):
     utils.displayIO(widget_alert, 'info', io)
         
     time.sleep(2)
+    
+    output_debug.append(v.Html(tag='p', children=["alert_map:{}".format(alert_map)]))
+    output_debug.append(v.Html(tag='p', children=["clump_map:{}".format(clump_map)]))
             
-    t_clump = Thread(target=clump, args=(alert_map, clump_map))
+    t_clump = Thread(target=clump, args=(alert_map, clump_map, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting clumping')
     time.sleep(2)
     t_clump.start()
@@ -199,7 +210,9 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
             
-    t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats))
+    output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
+    
+    t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats, output_debug))
     utils.displayIO(widget_alert, 'info', 'starting computation')
     time.sleep(2)
     t_calc.start()
@@ -209,12 +222,15 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
     
-    io = delete_local_file(clump_map)
-    utils.displayIO(widget_alert, 'info', io)
+    #io = delete_local_file(clump_map)
+    #utils.displayIO(widget_alert, 'info', io)
     
     time.sleep(2)
     
     utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
+    
+    widget_alert.children = output_debug
+    
     
     return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
