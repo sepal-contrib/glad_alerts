@@ -9,6 +9,7 @@ from utils import utils
 from scripts import gdrive
 from threading import Thread
 import ipyvuetify as v
+import getpass
 
 #initialize earth engine
 ee.Initialize()
@@ -228,6 +229,10 @@ def run_sepal_process(asset_name, year, widget_alert):
     time.sleep(2)
     
     utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
+    
+    output_debug.append(v.Html(tag='p', children=["env: {}".format(os.environ)]))
+    
+    output_debug.append(v.Html(tag='p', children=["user: {}".format(getpass.getUser())]))
     
     widget_alert.children = output_debug
     
