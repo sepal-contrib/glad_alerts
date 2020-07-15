@@ -14,6 +14,9 @@ import ee
 
 ee.Initialize()
 
+def get_palette():
+    return ['#d32f2f', '#ffeb3b']
+
 def display_results(asset_name, year):
     
     glad_dir = utils.create_result_folder(asset_name)
@@ -34,29 +37,30 @@ def display_results(asset_name, year):
     #null if all the alerts have been confirmed
     Y_prob = data[:,4]
     Y_prob = np.ma.masked_equal(Y_prob,0).compressed()
+    conf_y, conf_x = np.histogram(Y_conf, bins=30, weights=Y_conf)
+    x_sc = LinearScale()
+    y_sc = LinearScale()    
+    
     try:
         maxY4 = np.amax(Y_prob)
         data_hist = [Y_conf, Y_prob]
-        colors = ["#C26449", "#59C266"]
+        colors = get_palette()
         labels = ['confirmed alert', 'potential alert']
     except ValueError:  #raised if `Y_prob` is empty.
         maxY4 = 0
         data_hist = [Y_conf]
-        colors = ["#C26449"]
+        colors = [get_palette()[0]]
         labels = ['confirmed alert']
         pass
     
-    #plot in kilometers ?
+    #cannot plot 2 bars charts with different x_data
+    bar = Bars(x=conf_x, y=conf_y, scales={'x': x_sc, 'y': y_sc}, colors=[colors[0]])
     
-    hist_y, hist_x = np.histogram(Y_conf, bins=30, weights=Y_conf)
     
-    x_sc = LinearScale()
-    y_sc = LinearScale()
-
-    bar = Bars(x=hist_x, y=hist_y, scales={'x': x_sc, 'y': y_sc})
+    
     ax_x = Axis(label='patch size (px)', scale=x_sc)
     ax_y = Axis(label='number of pixels', scale=y_sc, orientation='vertical')
-    title ='Distribution of GLAD alerts for {0} in {1}'.format(aoi_name, year)
+    title ='Distribution of the confirmed GLAD alerts for {0} in {1}'.format(aoi_name, year)
     fig_hist = Figure(
         title= title,
         marks=[bar], 
@@ -159,8 +163,8 @@ def display_alerts(aoi_name, year, m):
     alerts = run_gee_process.get_alerts(aoi_name, year)
     alertsMasked = alerts.updateMask(alerts.gt(0));
     
-    palette = ['ffeb3b', 'd32f2f']
-    m.addLayer(alertsMasked, {'bands':['conf' + year[-2:]], 'min':2, 'max':3, 'palette': palette}, 'alerts') 
+    palette = get_palette()
+    m.addLayer(alertsMasked, {'bands':['conf' + year[-2:]], 'min':2, 'max':3, 'palette': palette[::-1]}, 'alerts') 
     
     #Create an empty image into which to paint the features, cast to byte.
     empty = ee.Image().byte()
@@ -175,7 +179,7 @@ def display_alerts(aoi_name, year, m):
     m.centerObject(aoi, zoom=mapping.update_zoom(aoi_name))
     
     legend_keys = ['potential alerts', 'confirmed alerts']
-    legend_colors = palette
+    legend_colors = palette[::-1]
     
     m.add_legend(legend_keys=legend_keys, legend_colors=legend_colors, position='topleft')
                  
