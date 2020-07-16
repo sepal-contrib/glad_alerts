@@ -14,7 +14,7 @@ import ipyvuetify as v
 ee.Initialize()
 
 #Message
-START_SEPAL = "the process has been launch on your SEPAL account"
+START_SEPAL = "The process has been launch on your SEPAL account"
 NO_TASK = "The GEE process has not been completed, launch it or run a status check through step 2."
 ALREADY_DONE = "This computation has already been performed\nYou can find your results in the glad_result folder of your computer"
 COMPUTAION_COMPLETED = "Computation complete"
@@ -49,7 +49,7 @@ def merge(filename, alert_map, glad_dir, output_debug):
         universal_newlines=True
     ) 
     
-    output_debug.append(v.Html(tag='p', children=['merge output: {}'.format(process.stdout)]))
+    output_debug.append(v.Html(tag='p', children=['gdal_merge output: {}'.format(process.stdout)]))
     
     return process.stdout
     
@@ -74,7 +74,7 @@ def clump(alert_map, clump_map, output_debug):
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    output_debug.append(v.Html(tag='p', children=['clump output: {}'.format(process.stdout)]))
+    output_debug.append(v.Html(tag='p', children=['oft_clump output: {}'.format(process.stdout)]))
     return process.stdout
     
 def calc(cwd, clump_map, alert_map, alert_stats, output_debug):
@@ -102,7 +102,7 @@ def calc(cwd, clump_map, alert_map, alert_stats, output_debug):
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    output_debug.append(v.Html(tag='p', children=['hist output: {}'.format(process.stdout)]))
+    output_debug.append(v.Html(tag='p', children=['oft_his output: {}'.format(process.stdout)]))
     return(process.stdout)  
 
 
@@ -187,12 +187,12 @@ def run_sepal_process(asset_name, year, widget_alert):
     pathname = utils.construct_filename(asset_name, year) + "*.tif"
     
     t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir, output_debug))
-    utils.displayIO(widget_alert, 'info', 'starting merging')
+    utils.displayIO(widget_alert, 'info', 'Starting merging')
     time.sleep(2)
     t_merge.start()
     while t_merge.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: MERGE RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: MERGE COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: MERGE RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: MERGE COMPLETED')
         
     time.sleep(2)
             
@@ -202,22 +202,22 @@ def run_sepal_process(asset_name, year, widget_alert):
     time.sleep(2)
             
     t_clump = Thread(target=clump, args=(alert_map, clump_map, output_debug))
-    utils.displayIO(widget_alert, 'info', 'starting clumping')
+    utils.displayIO(widget_alert, 'info', 'Starting clumping')
     time.sleep(2)
     t_clump.start()
     while t_clump.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: CLUMPING RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: CLUMPING COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: CLUMPING RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: CLUMPING COMPLETED')
         
     time.sleep(2)
     
     t_calc = Thread(target=calc, args=(cwd, clump_map, alert_map, alert_stats, output_debug))
-    utils.displayIO(widget_alert, 'info', 'starting computation')
+    utils.displayIO(widget_alert, 'info', 'Starting computation')
     time.sleep(2)
     t_calc.start()
     while t_calc.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: COMPUTATION RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: COMPUTATION COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: COMPUTATION RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: COMPUTATION COMPLETED')
         
     time.sleep(2)
     
