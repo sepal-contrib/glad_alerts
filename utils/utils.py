@@ -70,15 +70,19 @@ def wait_for_completion(task_descripsion, widget_alert):
     Args:
         task_descripsion (str) : name of the running task
         widget_alert (v.Alert) : alert to display the output messages
+    
+    Returns: state (str) : final state
     """
     state = 'UNSUBMITTED'
-    while state != 'COMPLETED':
+    while not (state == 'COMPLETED' or state =='FAILED'):
         displayIO(widget_alert, 'info', STATUS.format(state))
         time.sleep(5)
                     
         #search for the task in task_list
         current_task = search_task(task_descripsion)
         state = current_task.state
+        
+    return state
 
 def get_aoi_name(asset_name):
     """Return the corresponding aoi_name from an assetId"""
@@ -164,7 +168,7 @@ def get_shp_files():
     """
     
     root_dir = os.path.expanduser('~')
-    raw_list = glob.glob("**/*.shp", recursive=True)
+    raw_list = glob.glob(root_dir + "/**/*.shp", recursive=True)
     
     #check if the file is complete
     shp_list = []

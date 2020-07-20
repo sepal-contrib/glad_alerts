@@ -23,7 +23,7 @@ CHECK_IF_ASSET = "Check carefully that your string is an assetId"
 NOT_AVAILABLE = "This function is not yet available"
 NO_SHAPE = "No shape have been drawn on the map"
 ERROR_OCCURED = "An error occured with provided .shp file"
-NO_FILE = "No file have bee updated to the process"
+NO_FILE = "No file have been updated"
 
 
 def isAsset(asset_descripsion, folder):
@@ -179,8 +179,11 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             }
             task = ee.batch.Export.table.toAsset(**task_config)
             task.start()
-            utils.wait_for_completion(asset_name, widget_alert)
-                   
-            utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
+            state = utils.wait_for_completion(asset_name, widget_alert)
+            
+            if state == 'FAILED':
+                utils.displayIO(widget_alert, 'error',state)
+            else:
+                utils.displayIO(widget_alert, 'success',ASSET_CREATED.format(asset))
             
     return asset

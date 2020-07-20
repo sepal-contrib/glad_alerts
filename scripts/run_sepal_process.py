@@ -162,7 +162,8 @@ def run_sepal_process(asset_name, year, widget_alert):
     alert_map   = glad_dir + aoi_name + '_' + year + '_glad.tif'
     clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
     alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
-    cwd = os.path.join(os.path.expanduser('~'), 'tmp')
+    #cwd = os.path.join(os.path.expanduser('~'), 'tmp')
+    cwd = os.path.expanduser('~')
     
     output_debug.append(v.Html(tag='p', children=["glad_dir: {}".format(glad_dir)]))
     output_debug.append(v.Html(tag='p', children=["alert_map: {}".format(alert_map)]))

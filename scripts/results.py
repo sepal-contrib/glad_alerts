@@ -56,16 +56,16 @@ def display_results(asset_name, year):
         prob_y, prob_x = np.histogram(Y_prob, bins=30, weights=Y_prob)
         
         #cannot plot 2 bars charts with different x_data
-        ar = Bars(x=prob_x, y=prob_y, scales={'x': x_sc, 'y': y_sc}, colors=[colors[1]])
+        bar = Bars(x=prob_x, y=prob_y, scales={'x': x_sc, 'y': y_sc}, colors=[colors[1]])
         title ='Distribution of the potential GLAD alerts for {0} in {1}'.format(aoi_name, year)
     
-    figs.append(Figure(
-        title= title,
-        marks=[bar], 
-        axes=[ax_x, ax_y], 
-        padding_x=0.025, 
-        padding_y=0.025
-    ))
+        figs.append(Figure(
+            title= title,
+            marks=[bar], 
+            axes=[ax_x, ax_y], 
+            padding_x=0.025, 
+            padding_y=0.025
+        ))
     except ValueError:  #raised if `Y_prob` is empty.
         maxY4 = 0
         data_hist = [Y_conf]
