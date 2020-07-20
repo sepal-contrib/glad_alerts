@@ -6,6 +6,7 @@ import os
 import geemap
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
+from pathlib import Path
 
 #initialize earth engine
 ee.Initialize()
@@ -150,7 +151,7 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             asset = None
             return asset
         
-        name = os.path.split(file_input)[1]
+        name = Path(file_input).stem
         
         asset_name = FILE_PATTERN.format(re.sub('[^a-zA-Z\d\-\_]','_',name))
         

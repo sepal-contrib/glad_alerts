@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import ipyvuetify as v
 import glob
+from pathlib import Path
 
 #initialize earth engine
 ee.Initialize()
@@ -154,4 +155,30 @@ def check_for_file(filename):
         (str) : the pathname if found else False
     """
     return glob.glob(filename)
+
+def get_shp_files():
+    """return all the .shp files available in the user directories. Will verify if the .dbf and .shx exists and are located at the same place
+    
+    Returns: 
+        shp_list (str[]): the path to every .shp complete and available, empty list if none
+    """
+    
+    root_dir = os.path.expanduser('~')
+    raw_list = glob.glob("**/*.shp", recursive=True)
+    
+    #check if the file is complete
+    shp_list = []
+    for pathname in raw_list:
+        path = Path(pathname)
+        if os.path.isfile(path.with_suffix('.dbf')) and os.path.isfile(path.with_suffix('.shx')):
+            shp_list.append(pathname)
+
+    return shp_list 
+
+def get_filename(pathname):
+    """return the shp filename without it's extention and path"""
+    return Path(pathname).stem
+           
+
+    
       
