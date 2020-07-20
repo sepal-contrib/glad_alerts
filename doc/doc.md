@@ -1,9 +1,9 @@
 # Welcome in the user documentation 
 
-This documentation should explain every step  to execute the module. If any question or bug remains, please consider post it on the [bug report page](https://github.com/openforis/glad_alerts/issues/new/choose)
+This documentation should explain every step to execute the module. If any question or bug remains, please consider post it on the [bug report page](https://github.com/openforis/glad_alerts/issues/new/choose)
 
 ## Before starting 
-This module will require the user to register to GEE instead of using the public SEPAL account. follow this [link](https://earthengine.google.com) to create a GEE acount. Once done, select your GEE account in the SEPAL bottom right corner and use your personal credentials. 
+This module will require the user to register to GEE instead of using the public SEPAL account. Follow this [link](https://earthengine.google.com) to create a GEE account. Once done, select your GEE account in the SEPAL bottom right corner and use your personal credentials. 
 
 ![gee_account](./img/gee_account.png)
 
@@ -20,11 +20,11 @@ Follow the instructions provided by the command. You are now ready to go.
   1.2. [draw a shape](./select_aoi.md)  
   1.3. [import shapefile](./select_aoi.md)  
   1.4. [use Google Earth Engine](./select_aoi.md)  
-2. [Retreive the alerts](./retreive_alert.md)  
+2. [Retrieve the alerts](./retreive_alert.md)  
 3. [Postprocess the alerts](./postprocess_alerts.md)  
 4. [Use the results](./results.md)  
 
 
-> :warning: **Troubleshoutings:** This module is executed though a voila application that create a User Interface on top of a Jupyter notebook. The reactivity of some components will thus be a little slower than what you are used to on a standard website. please be nice with them
+> :warning: **Troubleshooting:** This module is executed through a voila application that create a User Interface on top of a Jupyter notebook. The reactivity of some components will thus be a little slower than what you are used to on a standard website. Please be nice with them.
 
-[let's start !](./select_aoi.md)
+[let's start!](./select_aoi.md)
