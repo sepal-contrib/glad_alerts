@@ -23,6 +23,7 @@ CHECK_IF_ASSET = "Check carefully that your string is an assetId"
 NOT_AVAILABLE = "This function is not yet available"
 NO_SHAPE = "No shape have been drawn on the map"
 ERROR_OCCURED = "An error occured with provided .shp file"
+NO_FILE = "No file have bee updated to the process"
 
 
 def isAsset(asset_descripsion, folder):
@@ -141,9 +142,17 @@ def run_GLAD_input(file_input, file_name, country_selection, asset_name, drawing
             utils.displayIO(widget_alert, 'info', CHECK_IF_ASSET)
             
     elif drawing_method == list_method[2]: #upload file
-        home_path = os.path.expanduser('~')
-        file_input = home_path + '/' + file_input
-        print(file_input)
+        
+        #check if something is drawn 
+        if file_input == None:
+            asset = None
+            utils.displayIO(widget_alert, 'error', NO_FILE)
+            return asset
+        
+        #home_path = os.path.expanduser('~')
+        #file_input = home_path + '/' + file_input
+        #print(file_input)
+        
         try:
             ee_object = geemap.shp_to_ee(file_input)
         except:
