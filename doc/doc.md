@@ -2,6 +2,18 @@
 
 This documentation should explain every step  to execute the module. If any question or bug remains, please consider post it on the [bug report page](https://github.com/openforis/glad_alerts/issues/new/choose)
 
+## Before starting 
+This module will require the user to register to GEE instead of using the public SEPAL account. follow this [link](https://earthengine.google.com) to create a GEE acount. Once done, select your GEE account in the SEPAL bottom right corner and use your personal credentials. 
+
+![gee_account](./img/gee_account.png)
+
+Then go to your terminal, start a `t1` session and run:  
+```
+$ earthengine authenticate
+```
+
+Follow the instructions provided by the command. You are now ready to go.
+
 ## table of content
 1. [select an AOI](./select_aoi.md)  
   1.1. [country boundaries](./select_aoi.md)  
