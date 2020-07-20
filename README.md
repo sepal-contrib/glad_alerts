@@ -1,7 +1,7 @@
 # GLAD alerts module
 
 ## about
-this module is a 3 steps process that retreive and compute the GLAD alerts on a selected Aera of interest.
+this module is a 3 steps process that retrieve and compute the GLAD alerts on a selected Aera of interest.
 
 For more information please refer to:
 - [Hansen et al. (2016) Humid tropical forest disturbance alerts using Landsat data. Environmental Research Letters 11 034008](https://iopscience.iop.org/article/10.1088/1748-9326/11/3/034008)

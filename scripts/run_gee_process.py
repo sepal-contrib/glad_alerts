@@ -66,7 +66,7 @@ def run_GEE_process(asset_name, year, widget_alert):
     #search for the files in gdrive
     drive_handler = gdrive.gdrive()
     files = drive_handler.get_files(filename)
-    drive_handler.print_file_list()
+    #drive_handler.print_file_list()
     
     #launch the task in GEE 
     if current_task == None or files == []:

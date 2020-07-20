@@ -8,18 +8,19 @@ sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 from scripts import gdrive
 from threading import Thread
+import ipyvuetify as v
 
 #initialize earth engine
 ee.Initialize()
 
 #Message
-START_SEPAL = "the process has been launch on your SEPAL account"
+START_SEPAL = "The process has been launch on your SEPAL account"
 NO_TASK = "The GEE process has not been completed, launch it or run a status check through step 2."
 ALREADY_DONE = "This computation has already been performed\nYou can find your results in the glad_result folder of your computer"
 COMPUTAION_COMPLETED = "Computation complete"
 
 #function 
-def merge(filename, alert_map, glad_dir):
+def merge(filename, alert_map, glad_dir, output_debug):
     """ merge into a single tif files
     
     Args:
@@ -48,9 +49,11 @@ def merge(filename, alert_map, glad_dir):
         universal_newlines=True
     ) 
     
+    output_debug.append(v.Html(tag='p', children=['gdal_merge output: {}'.format(process.stdout)]))
+    
     return process.stdout
     
-def clump(alert_map, clump_map):
+def clump(alert_map, clump_map, output_debug):
     """ clump the results
     
     Args:
@@ -71,10 +74,10 @@ def clump(alert_map, clump_map):
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    
+    output_debug.append(v.Html(tag='p', children=['oft_clump output: {}'.format(process.stdout)]))
     return process.stdout
     
-def calc(clump_map, alert_map, alert_stats):
+def calc(cwd, clump_map, alert_map, alert_stats, output_debug):
     """Compute the statistics per each individual clump
     
     Args:
@@ -94,11 +97,12 @@ def calc(clump_map, alert_map, alert_stats):
             '-maxval','3'
         
         ],
+        cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    
+    output_debug.append(v.Html(tag='p', children=['oft_his output: {}'.format(process.stdout)]))
     return(process.stdout)  
 
 
@@ -147,6 +151,8 @@ def run_sepal_process(asset_name, year, widget_alert):
         (str,str): the links to the .tif (res. .txt) file 
     """
     
+    output_debug = [v.Html(tag="h3", children=['Process outputs'])]
+    
     aoi_name= utils.get_aoi_name(asset_name)
         
     #define the files variables
@@ -156,17 +162,24 @@ def run_sepal_process(asset_name, year, widget_alert):
     alert_map   = glad_dir + aoi_name + '_' + year + '_glad.tif'
     clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
     alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
+    #cwd = os.path.join(os.path.expanduser('~'), 'tmp')
+    cwd = os.path.expanduser('~')
+    
+    output_debug.append(v.Html(tag='p', children=["glad_dir: {}".format(glad_dir)]))
+    output_debug.append(v.Html(tag='p', children=["alert_map: {}".format(alert_map)]))
+    output_debug.append(v.Html(tag='p', children=["clump_map: {}".format(clump_map)]))
+    output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
         
     filename = utils.construct_filename(asset_name, year)
     #check that the Gee process is finished
     if not utils.search_task(filename):
         utils.displayIO(widget_alert, 'error', NO_TASK)
-        return ('#', '#')
+        return (output_debug, '#', '#')
         
     #check that the process is not already done
     if utils.check_for_file(alert_stats):
         utils.displayIO(widget_alert, 'success', ALREADY_DONE)
-        return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
+        return (output_debug, utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
     #download from GEE
     download_task_tif(filename, glad_dir)
@@ -174,13 +187,13 @@ def run_sepal_process(asset_name, year, widget_alert):
     #process data with otf
     pathname = utils.construct_filename(asset_name, year) + "*.tif"
     
-    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir))
-    utils.displayIO(widget_alert, 'info', 'starting merging')
+    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir, output_debug))
+    utils.displayIO(widget_alert, 'info', 'Starting merging')
     time.sleep(2)
     t_merge.start()
     while t_merge.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: MERGE RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: MERGE COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: MERGE RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: MERGE COMPLETED')
         
     time.sleep(2)
             
@@ -189,32 +202,27 @@ def run_sepal_process(asset_name, year, widget_alert):
         
     time.sleep(2)
             
-    t_clump = Thread(target=clump, args=(alert_map, clump_map))
-    utils.displayIO(widget_alert, 'info', 'starting clumping')
+    t_clump = Thread(target=clump, args=(alert_map, clump_map, output_debug))
+    utils.displayIO(widget_alert, 'info', 'Starting clumping')
     time.sleep(2)
     t_clump.start()
     while t_clump.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: CLUMPING RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: CLUMPING COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: CLUMPING RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: CLUMPING COMPLETED')
         
     time.sleep(2)
-            
-    t_calc = Thread(target=calc, args=(clump_map, alert_map, alert_stats))
-    utils.displayIO(widget_alert, 'info', 'starting computation')
+    
+    t_calc = Thread(target=calc, args=(cwd, clump_map, alert_map, alert_stats, output_debug))
+    utils.displayIO(widget_alert, 'info', 'Starting computation')
     time.sleep(2)
     t_calc.start()
     while t_calc.is_alive():
-        utils.displayIO(widget_alert, 'info', 'status: COMPUTATION RUNNING')
-    utils.displayIO(widget_alert, 'info', 'status: COMPUTATION COMPLETED')
+        utils.displayIO(widget_alert, 'info', 'Status: COMPUTATION RUNNING')
+    utils.displayIO(widget_alert, 'info', 'Status: COMPUTATION COMPLETED')
         
     time.sleep(2)
     
-    io = delete_local_file(clump_map)
-    utils.displayIO(widget_alert, 'info', io)
+    utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)    
     
-    time.sleep(2)
-    
-    utils.displayIO(widget_alert, 'success', COMPUTAION_COMPLETED)
-    
-    return (utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
+    return (output_debug, utils.create_download_link(alert_map), utils.create_download_link(alert_stats))
     
