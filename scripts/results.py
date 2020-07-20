@@ -37,15 +37,35 @@ def display_results(asset_name, year):
     #null if all the alerts have been confirmed
     Y_prob = data[:,4]
     Y_prob = np.ma.masked_equal(Y_prob,0).compressed()
-    conf_y, conf_x = np.histogram(Y_conf, bins=30, weights=Y_conf)
+    
+    
+    
     x_sc = LinearScale()
-    y_sc = LinearScale()    
+    y_sc = LinearScale()  
+    
+    ax_x = Axis(label='patch size (px)', scale=x_sc)
+    ax_y = Axis(label='number of pixels', scale=y_sc, orientation='vertical')  
+    
+    figs = []
     
     try:
         maxY4 = np.amax(Y_prob)
         data_hist = [Y_conf, Y_prob]
         colors = get_palette()
         labels = ['confirmed alert', 'potential alert']
+        prob_y, prob_x = np.histogram(Y_prob, bins=30, weights=Y_prob)
+        
+        #cannot plot 2 bars charts with different x_data
+        ar = Bars(x=prob_x, y=prob_y, scales={'x': x_sc, 'y': y_sc}, colors=[colors[1]])
+        title ='Distribution of the potential GLAD alerts for {0} in {1}'.format(aoi_name, year)
+    
+    figs.append(Figure(
+        title= title,
+        marks=[bar], 
+        axes=[ax_x, ax_y], 
+        padding_x=0.025, 
+        padding_y=0.025
+    ))
     except ValueError:  #raised if `Y_prob` is empty.
         maxY4 = 0
         data_hist = [Y_conf]
@@ -54,24 +74,21 @@ def display_results(asset_name, year):
         pass
     
     #cannot plot 2 bars charts with different x_data
+    conf_y, conf_x = np.histogram(Y_conf, bins=30, weights=Y_conf)
     bar = Bars(x=conf_x, y=conf_y, scales={'x': x_sc, 'y': y_sc}, colors=[colors[0]])
-    
-    
-    
-    ax_x = Axis(label='patch size (px)', scale=x_sc)
-    ax_y = Axis(label='number of pixels', scale=y_sc, orientation='vertical')
     title ='Distribution of the confirmed GLAD alerts for {0} in {1}'.format(aoi_name, year)
-    fig_hist = Figure(
+    
+    figs.append(Figure(
         title= title,
         marks=[bar], 
         axes=[ax_x, ax_y], 
         padding_x=0.025, 
         padding_y=0.025
-    )
+    ))
     
-    fig_hist.layout.width = 'auto'
-    fig_hist.layout.height = 'auto'
-    fig_hist.layout.min_height = '300px' # so it still shows nicely in the notebook
+    #fig_hist.layout.width = 'auto'
+    #fig_hist.layout.height = 'auto'
+    #fig_hist.layout.min_height = '300px' # so it still shows nicely in the notebook
 
     filepath = glad_dir + aoi_name + '_' + year + '_hist.png'
     
@@ -79,7 +96,7 @@ def display_results(asset_name, year):
         #fig_hist.save_png(filepath)
         create_png(data_hist, labels, colors, bins, max(maxY4,maxY5), title, filepath)
     
-    return (fig_hist, utils.create_download_link(filepath), utils.create_download_link(alert_csv))
+    return (figs, utils.create_download_link(filepath), utils.create_download_link(alert_csv))
 
 def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     """useless function that create a matplotlib file because bqplot cannot yet export without a popup
