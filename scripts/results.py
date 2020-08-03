@@ -85,15 +85,11 @@ def display_results(asset_name, year):
         padding_x=0.025, 
         padding_y=0.025
     ))
-    
-    #fig_hist.layout.width = 'auto'
-    #fig_hist.layout.height = 'auto'
-    #fig_hist.layout.min_height = '300px' # so it still shows nicely in the notebook
 
     filepath = glad_dir + aoi_name + '_' + year + '_hist.png'
     
     if not utils.check_for_file(filepath):
-        #fig_hist.save_png(filepath)
+        title = 'Distribution of the GLAD alerts \nfor {0} in {1}'.format(aoi_name, year)
         create_png(data_hist, labels, colors, bins, max(maxY4,maxY5), title, filepath)
     
     return (figs, utils.create_download_link(filepath), utils.create_download_link(alert_csv))
