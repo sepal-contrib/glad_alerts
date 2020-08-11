@@ -19,6 +19,8 @@ import numpy as np
 from bqplot import *
 import matplotlib.pyplot as plt
 import csv
+from sepal_ui import oft 
+from sepal_ui import gdal as sgdal
 
 #initialize earth engine
 ee.Initialize()
@@ -58,57 +60,7 @@ def merge(filename, alert_map, glad_dir, output_debug):
     
     return process.stdout
     
-def clump(alert_map, clump_map, output_debug):
-    """ clump the results
-    
-    Args:
-        alert_map (str): pathname to the alert tif file
-        clump_map (str): pathname to the tmp clump file
-    
-    Returns:
-        process.stdout (str): output of the process
-    """
-    
-    process = subprocess.run(
-        [
-            'oft-clump', 
-            '-i', alert_map, 
-            '-o', clump_map
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True
-    )
-    output_debug.append(v.Html(tag='p', children=['oft_clump output: {}'.format(process.stdout)]))
-    return process.stdout
-    
-def calc(cwd, clump_map, alert_map, alert_stats, output_debug):
-    """Compute the statistics per each individual clump
-    
-    Args:
-        clump_map (str): pathname to the clump tif file
-        alert_map (str): pathname to the alerts tif file
-        alert_stat (str): pathname to the output path
-        
-    Results:
-        process.stdout (str): output of the process
-    """
-    process = subprocess.run(
-        [
-            'oft-his', 
-            '-um', clump_map, 
-            '-i', alert_map, 
-            '-o', alert_stats,
-            '-maxval','3'
-        
-        ],
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True
-    )
-    output_debug.append(v.Html(tag='p', children=['oft_his output: {}'.format(process.stdout)]))
-    return(process.stdout)  
+ 
 
 
 def download_task_tif(filename, glad_dir):
@@ -195,46 +147,40 @@ def sepal_process(asset_name, year, output, oft_output):
     #process data with otf
     pathname = filename + "*.tif"
     
-    t_merge = Thread(target=merge, args=(pathname, alert_map, glad_dir, output_debug))
-    su.displayIO(output, 'Starting merging')
+    #create the files list 
+    files = []
+    for file in glob.glob(glad_dir + pathname):
+        files.append(file)
+    
+    #run the merge process
+    su.displayIO(output, ms.MERGE_TILE)
     time.sleep(2)
-    t_merge.start()
-    while t_merge.is_alive():
-        su.displayIO(output, 'Status: MERGE RUNNING')
-    su.displayIO(output, 'Status: MERGE COMPLETED')
-        
-    time.sleep(2)
-            
+    io = sgdal.merge(files, out_filename=alert_map, v=True, co='"COMPRESS=LZW"', output=output)
+    output_debug.append(v.Html(tag='p', children=[io]))
+    
+    #delete local files
     io = delete_local_file(glad_dir + pathname)
     su.displayIO(output, io)
-        
-    time.sleep(2)
-            
-    t_clump = Thread(target=clump, args=(alert_map, clump_map, output_debug))
-    su.displayIO(output, 'Starting clumping')
-    time.sleep(2)
-    t_clump.start()
-    while t_clump.is_alive():
-        su.displayIO(output, 'Status: CLUMPING RUNNING')
-    su.displayIO(output, 'Status: CLUMPING COMPLETED')
-        
-    time.sleep(2)
     
-    t_calc = Thread(target=calc, args=(cwd, clump_map, alert_map, alert_stats, output_debug))
-    su.displayIO(output, 'Starting computation')
+    #compress raster
+    
+    #clump the patches together
+    su.displayIO(output, ms.IDENTIFY_PATCH)
     time.sleep(2)
-    t_calc.start()
-    while t_calc.is_alive():
-        su.displayIO(output, 'Status: COMPUTATION RUNNING')
-    su.displayIO(output, 'Status: COMPUTATION COMPLETED')
-        
+    io = oft.clump(alert_map, clump_map, output=output)
+    output_debug.append(v.Html(tag='p', children=[io]))
+    
+    #compress clump raster
+    
+    #create the histogram of the patches
+    su.displayIO(output, ms.PATCH_SIZE)
     time.sleep(2)
+    io = oft.his(alert_map, alert_stats, maskfile=clump_map, maxval=3, output=output)
+    output_debug.append(v.Html(tag='p', children=[io]))
     
     su.displayIO(output, ms.COMPUTAION_COMPLETED, 'success')  
     
     oft_output.children = output_debug
-    
-    #su.displayIO(oft_output, output_debug)
     
     return (alert_map, alert_stats)
 
