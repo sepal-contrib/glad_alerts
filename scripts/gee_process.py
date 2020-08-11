@@ -61,7 +61,7 @@ def get_alerts(aoi_name, year):
     
     return alerts
     
-def run_GEE_process(asset_name, year, widget_alert):
+def gee_process(asset_name, year, widget_alert):
     
     global widget_gee_process_alert
     
@@ -73,7 +73,6 @@ def run_GEE_process(asset_name, year, widget_alert):
     #search for the files in gdrive
     drive_handler = gdrive.gdrive()
     files = drive_handler.get_files(filename)
-    #drive_handler.print_file_list()
     
     #launch the task in GEE 
     if current_task == None or files == []:
