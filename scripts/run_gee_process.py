@@ -50,6 +50,13 @@ def get_alerts(aoi_name, year):
     
     aoi = ee.FeatureCollection(aoi_name)
     all_alerts  = ee.ImageCollection('projects/glad/alert/UpdResult')
+    
+    #since the bug of august 2020 I need to remove the images that doesn't contain the 9 bands 
+    def numbands(image):
+        return ee.Algorithms.If(image.bandNames().length().eq(9),image)
+    if year == '2019':
+        all_alerts = all_alerts.map(numbands,True)
+    
     alerts = all_alerts.select('conf' + year[-2:]).mosaic().clip(aoi);
     
     return alerts
