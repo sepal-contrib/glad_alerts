@@ -21,47 +21,10 @@ import matplotlib.pyplot as plt
 import csv
 from sepal_ui import oft 
 from sepal_ui import gdal as sgdal
+import gdal
 
 #initialize earth engine
 ee.Initialize()
-
-
-#function 
-def merge(filename, alert_map, glad_dir, output_debug):
-    """ merge into a single tif files
-    
-    Args:
-        filename (str): filename pattern of the Tif to merge
-        alert_map (str): output filename
-        glad_dir (tr): glad result folder
-        
-    Returns:
-        process.stdout (str): output of the process
-    """
-    
-    #create command
-    command = [
-        'gdal_merge.py',
-        '-o', alert_map,
-        '-v', '-co', '"COMPRESS=LZW"'
-    ]
-    #add the input files
-    for file in glob.glob(glad_dir + filename):
-        command.append(file)
-
-    process = subprocess.run(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True
-    ) 
-    
-    output_debug.append(v.Html(tag='p', children=['gdal_merge output: {}'.format(process.stdout)]))
-    
-    return process.stdout
-    
- 
-
 
 def download_task_tif(filename, glad_dir):
     """Download the tif files from your google drive folder to the local glad_results folder
@@ -116,15 +79,11 @@ def sepal_process(asset_name, year, output, oft_output):
     glad_dir = utils.create_result_folder(asset_name)
     
     #year and country_code are defined by step 1 cell
-    alert_map   = glad_dir + aoi_name + '_' + year + '_glad.tif'
-    clump_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump_.tif'
-    alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
-    cwd = os.path.expanduser('~')
-    
-    output_debug.append(v.Html(tag='p', children=["glad_dir: {}".format(glad_dir)]))
-    output_debug.append(v.Html(tag='p', children=["alert_map: {}".format(alert_map)]))
-    output_debug.append(v.Html(tag='p', children=["clump_map: {}".format(clump_map)]))
-    output_debug.append(v.Html(tag='p', children=["alert_stats:{}".format(alert_stats)]))
+    alert_tmp_map   = glad_dir + aoi_name + '_' + year + '_tmp_glad.tif'
+    alert_map       = glad_dir + aoi_name + '_' + year + '_glad.tif'
+    clump_tmp_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump.tif'
+    clump_map       = glad_dir + aoi_name + '_' + year + '_clump.tif'
+    alert_stats     = glad_dir + aoi_name + '_' + year + '_stats.txt'
         
     filename = utils.construct_filename(asset_name, year)
     
@@ -155,27 +114,33 @@ def sepal_process(asset_name, year, output, oft_output):
     #run the merge process
     su.displayIO(output, ms.MERGE_TILE)
     time.sleep(2)
-    io = sgdal.merge(files, out_filename=alert_map, v=True, co='"COMPRESS=LZW"', output=output)
+    io = sgdal.merge(files, out_filename=alert_tmp_map, v=True, output=oft_output)
     output_debug.append(v.Html(tag='p', children=[io]))
     
     #delete local files
-    io = delete_local_file(glad_dir + pathname)
-    su.displayIO(output, io)
+    for file in files:
+        os.remove(file)
     
     #compress raster
+    su.displayIO(output, ms.COMPRESS_FILE)
+    gdal.Translate(alert_map, alert_tmp_map, creationOptions=['COMPRESS=LZW'])
+    os.remove(alert_tmp_map)
     
     #clump the patches together
     su.displayIO(output, ms.IDENTIFY_PATCH)
     time.sleep(2)
-    io = oft.clump(alert_map, clump_map, output=output)
+    io = oft.clump(alert_map, clump_tmp_map, output=oft_output)
     output_debug.append(v.Html(tag='p', children=[io]))
     
     #compress clump raster
+    su.displayIO(output, ms.COMPRESS_FILE)
+    gdal.Translate(clump_map, clump_tmp_map, creationOptions=['COMPRESS=LZW'])
+    os.remove(clump_tmp_map)
     
     #create the histogram of the patches
     su.displayIO(output, ms.PATCH_SIZE)
     time.sleep(2)
-    io = oft.his(alert_map, alert_stats, maskfile=clump_map, maxval=3, output=output)
+    io = oft.his(alert_map, alert_stats, maskfile=clump_map, maxval=3, output=oft_output)
     output_debug.append(v.Html(tag='p', children=[io]))
     
     su.displayIO(output, ms.COMPUTAION_COMPLETED, 'success')  
