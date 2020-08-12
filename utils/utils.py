@@ -4,6 +4,9 @@ import os
 from datetime import datetime
 import time
 import ipyvuetify as v
+import glob
+from pathlib import Path
+import geemap
 
 #initialize earth engine
 ee.Initialize()
@@ -68,17 +71,21 @@ def wait_for_completion(task_descripsion, widget_alert):
     Args:
         task_descripsion (str) : name of the running task
         widget_alert (v.Alert) : alert to display the output messages
+    
+    Returns: state (str) : final state
     """
     state = 'UNSUBMITTED'
-    while state != 'COMPLETED':
+    while not (state == 'COMPLETED' or state =='FAILED'):
         displayIO(widget_alert, 'info', STATUS.format(state))
         time.sleep(5)
                     
         #search for the task in task_list
         current_task = search_task(task_descripsion)
         state = current_task.state
+        
+    return state
 
-def set_aoi_name(asset_name):
+def get_aoi_name(asset_name):
     """Return the corresponding aoi_name from an assetId"""
     return os.path.split(asset_name)[1].replace('aoi_','')
 
@@ -92,8 +99,8 @@ def construct_filename(asset_name, year):
     Returns:
         filename (str): the filename to save the Tif files
     """
-    aoi_name = set_aoi_name(asset_name)
-    filename = 'alerts_' + aoi_name + '_' + str(year) + "test0-4" #remove test when it will be in production 
+    aoi_name = get_aoi_name(asset_name)
+    filename = aoi_name + '_' + str(year) + '_alerts' 
     
     return filename
 
@@ -116,16 +123,104 @@ def search_task(task_descripsion):
             
     return current_task
 
-def create_result_folder():
+def create_result_folder(aoiId):
     """Create a folder to download the glad images
+   
+    Args:
+        aoiId(str) : the Id to the asset
     
     Returns:
         glad_dir (str): pathname to the glad_result folder
     """
+    aoi = get_aoi_name(aoiId)
+    glad_dir = os.path.join(os.path.expanduser('~'), 'glad_results') + '/'
+        
+    pathname = glad_dir + aoi + '/'
+    if not os.path.exists(pathname):
+        os.makedirs(pathname)
     
-    glad_dir = os.path.join(os.path.expanduser('~'), 'glad_results')+'/'
-    if not os.path.exists(glad_dir):
-        os.makedirs(glad_dir)
+    return pathname
+
+def create_download_link(pathname):
+    result_path = os.path.expanduser(pathname)
+    home_path = os.path.expanduser('~')
+    download_path='/'+os.path.relpath(result_path,home_path)
     
-    return glad_dir
+    link = "/api/files/download?path={}".format(download_path)
+    
+    return link
+
+def check_for_file(filename):
+    """return the file corresponding to the pathname else False
+    
+    Args:
+        filename (str): expected pathname of the file
+      
+    Returns:
+        (str) : the pathname if found else False
+    """
+    return glob.glob(filename)
+
+def get_shp_files():
+    """return all the .shp files available in the user directories. Will verify if the .dbf and .shx exists and are located at the same place
+    
+    Returns: 
+        shp_list (str[]): the path to every .shp complete and available, empty list if none
+    """
+    
+    root_dir = os.path.expanduser('~')
+    raw_list = glob.glob(root_dir + "/**/*.shp", recursive=True)
+    
+    #check if the file is complete
+    shp_list = []
+    for pathname in raw_list:
+        path = Path(pathname)
+        if os.path.isfile(path.with_suffix('.dbf')) and os.path.isfile(path.with_suffix('.shx')):
+            shp_list.append(pathname)
+
+    return shp_list 
+
+#def get_filename(pathname):
+#    """return the shp filename without it's extention and path"""
+#    return Path(pathname).stem
+
+def complete_dict(first_dict, second_dict):
+    """complete the first dict with the missing keys from the second dict. thos keys values are set to 0. return a sorted dict
+    """
+    for key in second_dict:
+            if not key in first_dict.keys():
+                first_dict[key] = 0 
+            
+    sorted_dict = {}
+    for key in sorted(first_dict):
+        sorted_dict[key] = first_dict[key]
+                        
+    return sorted_dict
+
+def init_result_map():
+    """initialize a geemap to display the aggregated data"""
+    
+    #init a map center in 0,0
+    m = geemap.Map(
+        center=(0, 0),
+        zoom=2
+    )
+    
+    #remove layers and controls
+    m.clear_layers()
+    m.clear_controls()
+    
+    #use the carto basemap
+    m.add_basemap('Esri.WorldImagery')
+    
+    #add the useful controls 
+    m.add_control(geemap.ZoomControl(position='topright'))
+    m.add_control(geemap.LayersControl(position='topright'))
+    m.add_control(geemap.AttributionControl(position='bottomleft'))
+    m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
+
+    return m
+           
+
+    
       

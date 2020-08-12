@@ -4,6 +4,7 @@ import time
 import sys
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
+from scripts import gdrive
 
 #initialize earth engine
 ee.Initialize()
@@ -49,22 +50,32 @@ def get_alerts(aoi_name, year):
     
     aoi = ee.FeatureCollection(aoi_name)
     all_alerts  = ee.ImageCollection('projects/glad/alert/UpdResult')
+    
+    #since the bug of august 2020 I need to remove the images that doesn't contain the 9 bands 
+    def numbands(image):
+        return ee.Algorithms.If(image.bandNames().length().eq(9),image)
+    if year == '2019':
+        all_alerts = all_alerts.map(numbands,True)
+    
     alerts = all_alerts.select('conf' + year[-2:]).mosaic().clip(aoi);
     
     return alerts
     
-def run_GEE_process(asset_name, year, widget_alert):
+def gee_process(asset_name, year, widget_alert):
     
     global widget_gee_process_alert
     
     
     #search for the task in task_list
     filename = utils.construct_filename(asset_name, year)
-    print(filename)
     current_task = utils.search_task(filename)
     
+    #search for the files in gdrive
+    drive_handler = gdrive.gdrive()
+    files = drive_handler.get_files(filename)
+    
     #launch the task in GEE 
-    if current_task == None:
+    if current_task == None or files == []:
         
         alerts = get_alerts(asset_name, year)
         current_task = download_to_disk(filename, alerts, asset_name)

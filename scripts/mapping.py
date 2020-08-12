@@ -29,11 +29,11 @@ def init_map():
     m = geemap.Map(center=center, zoom=zoom)
     m.clear_layers()
     m.clear_controls()
-    m.add_basemap('Esri.WorldImagery')
+    m.add_basemap('Esri Satellite')
     m.add_basemap('CartoDB.Positron')
     m.add_control(geemap.ZoomControl(position='topright'))
     m.add_control(geemap.LayersControl(position='topright'))
-    m.add_control(geemap.AttributionControl(position='bottomright'))
+    m.add_control(geemap.AttributionControl(position='bottomleft'))
     m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
     
     return (dc, m)
@@ -109,8 +109,26 @@ def get_coords(coordinates, array_coord=[]):
     
     for item in coordinates:
         get_coords(item,array_coord)
-
-
+        
+def init_result_map():
+    '''Initialize a map centered on the point [0,0] with zoom at 1 with satellite imagery
+    
+    Returns: 
+        m (Map): a map
+    '''
+    center = [0, 0]
+    zoom = 2
+    
+    m = geemap.Map(center=center, zoom=zoom)
+    m.clear_layers()
+    m.clear_controls()
+    m.add_basemap('SATELLITE')
+    m.add_control(geemap.ZoomControl(position='topright'))
+    m.add_control(geemap.LayersControl(position='topright'))
+    m.add_control(geemap.AttributionControl(position='bottomleft'))
+    m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
+    
+    return m
 
     
             
