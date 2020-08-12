@@ -6,6 +6,7 @@ import time
 import ipyvuetify as v
 import glob
 from pathlib import Path
+import geemap
 
 #initialize earth engine
 ee.Initialize()
@@ -179,9 +180,46 @@ def get_shp_files():
 
     return shp_list 
 
-def get_filename(pathname):
-    """return the shp filename without it's extention and path"""
-    return Path(pathname).stem
+#def get_filename(pathname):
+#    """return the shp filename without it's extention and path"""
+#    return Path(pathname).stem
+
+def complete_dict(first_dict, second_dict):
+    """complete the first dict with the missing keys from the second dict. thos keys values are set to 0. return a sorted dict
+    """
+    for key in second_dict:
+            if not key in first_dict.keys():
+                first_dict[key] = 0 
+            
+    sorted_dict = {}
+    for key in sorted(first_dict):
+        sorted_dict[key] = first_dict[key]
+                        
+    return sorted_dict
+
+def init_result_map():
+    """initialize a geemap to display the aggregated data"""
+    
+    #init a map center in 0,0
+    m = geemap.Map(
+        center=(0, 0),
+        zoom=2
+    )
+    
+    #remove layers and controls
+    m.clear_layers()
+    m.clear_controls()
+    
+    #use the carto basemap
+    m.add_basemap('Esri.WorldImagery')
+    
+    #add the useful controls 
+    m.add_control(geemap.ZoomControl(position='topright'))
+    m.add_control(geemap.LayersControl(position='topright'))
+    m.add_control(geemap.AttributionControl(position='bottomleft'))
+    m.add_control(geemap.ScaleControl(position='bottomleft', imperial=False))
+
+    return m
            
 
     
