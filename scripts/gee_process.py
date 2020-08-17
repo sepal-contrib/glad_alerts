@@ -29,7 +29,7 @@ def download_to_disk(filename, image, aoi_name):
         'description':filename,
         'scale': 30,
         'region':ee.FeatureCollection(aoi_name).geometry(),
-        'maxPixels': 1e10
+        'maxPixels': 1e13
     }
     
     task = ee.batch.Export.image.toDrive(**task_config)
