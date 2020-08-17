@@ -66,10 +66,10 @@ def displayIO(widget_alert, alert_type, message):
    ]
     
 def wait_for_completion(task_descripsion, widget_alert):
-    """Wait until the selected process is finished. Display some output information
+    """Wait until the selected process are finished. Display some output information
 
     Args:
-        task_descripsion (str) : name of the running task
+        task_descripsion ([str]) : name of the running tasks
         widget_alert (v.Alert) : alert to display the output messages
     
     Returns: state (str) : final state
@@ -80,27 +80,29 @@ def wait_for_completion(task_descripsion, widget_alert):
         time.sleep(5)
                     
         #search for the task in task_list
-        current_task = search_task(task_descripsion)
-        state = current_task.state
-        
+        for task in task_descripsion:
+            current_task = search_task(task)
+            state = current_task.state
+            if state == 'RUNNING': break
+    
     return state
 
 def get_aoi_name(asset_name):
     """Return the corresponding aoi_name from an assetId"""
     return os.path.split(asset_name)[1].replace('aoi_','')
 
-def construct_filename(asset_name, year):
+def construct_filename(asset_name, date_range):
     """return the filename associated with the current task
     
     Args:
         asset_name (str): the ID of the asset
-        year (str): the year to retreive the GLAD alert
+        date_range ([str, str]): the range of date to retreive the GLAD alerts (Y-m-d)
     
     Returns:
         filename (str): the filename to save the Tif files
     """
     aoi_name = get_aoi_name(asset_name)
-    filename = aoi_name + '_' + str(year) + '_alerts' 
+    filename = aoi_name + '_{0}_{1}_alerts'.format(date_range[0], date_range[1]) 
     
     return filename
 

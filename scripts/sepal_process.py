@@ -59,7 +59,7 @@ def delete_local_file(pathname):
     return "{0} files deleted".format(count)
 
 
-def sepal_process(asset_name, year, output, oft_output):
+def sepal_process(asset_name, year, date_range, output, oft_output):
     """execute the 3 different operations of the computation successively: merge, clump and compute
     
     Args:
@@ -79,13 +79,16 @@ def sepal_process(asset_name, year, output, oft_output):
     glad_dir = utils.create_result_folder(asset_name)
     
     #year and country_code are defined by step 1 cell
-    alert_tmp_map   = glad_dir + aoi_name + '_' + year + '_tmp_glad.tif'
-    alert_map       = glad_dir + aoi_name + '_' + year + '_glad.tif'
-    clump_tmp_map   = glad_dir + aoi_name + '_' + year + '_tmp_clump.tif'
-    clump_map       = glad_dir + aoi_name + '_' + year + '_clump.tif'
-    alert_stats     = glad_dir + aoi_name + '_' + year + '_stats.txt'
+    basename = glad_dir + aoi_name + '_' + date_range[0] + '_' + date_range[1]  
+    alert_date_tmp_map = basename + '_tmp_glad_date.tif'
+    alert_date_map     = basename + '_glad_date.tif'
+    alert_tmp_map      = basename + '_tmp_glad.tif'
+    alert_map          = basename + '_glad.tif'
+    clump_tmp_map      = basename + '_tmp_clump.tif'
+    clump_map          = basename + '_clump.tif'
+    alert_stats        = basename + '_stats.txt'
         
-    filename = utils.construct_filename(asset_name, year)
+    filename = utils.construct_filename(asset_name, date_range)
     
     #check that the tiles exist in gdrive
     drive_handler = gdrive.gdrive()
@@ -100,11 +103,43 @@ def sepal_process(asset_name, year, output, oft_output):
         su.displayIO(output, ms.ALREADY_DONE, 'success')
         return (alert_map, alert_stats)
     
+    ##############################
+    ##   digest the date map    ##
+    ##############################
+    filename_date = filename + '_date'
+    download_task_tif(filename_date, glad_dir)
+    
+    pathname = filename_date + "*.tif"
+    
+    files = []
+    for file in glob.glob(glad_dir + pathname):
+        files.append(file)
+        
+    #run the merge process
+    su.displayIO(output, ms.MERGE_TILE)
+    time.sleep(2)
+    io = sgdal.merge(files, out_filename=alert_date_tmp_map, v=True, output=oft_output)
+    output_debug.append(v.Html(tag='p', children=[io]))
+    
+    #delete local files
+    for file in files:
+        os.remove(file)
+    
+    #compress raster
+    su.displayIO(output, ms.COMPRESS_FILE)
+    gdal.Translate(alert_date_map, alert_date_tmp_map, creationOptions=['COMPRESS=LZW'])
+    os.remove(alert_date_tmp_map)
+    
+    ##############################
+    ##   digest the map         ##
+    ##############################
+    
     #download from GEE
-    download_task_tif(filename, glad_dir)
+    filename_map = filename + '_map'
+    download_task_tif(filename_map, glad_dir)
         
     #process data with otf
-    pathname = filename + "*.tif"
+    pathname = filename_map + "*.tif"
     
     #create the files list 
     files = []
@@ -149,11 +184,13 @@ def sepal_process(asset_name, year, output, oft_output):
     
     return (alert_map, alert_stats)
 
-def display_results(asset_name, year, raster):
+def display_results(asset_name, year, date_range, raster):
     
     glad_dir = utils.create_result_folder(asset_name)
     aoi_name = utils.get_aoi_name(asset_name) 
-    alert_stats = glad_dir + aoi_name + '_' + year + '_stats.txt'
+    
+    basename = glad_dir + aoi_name + '_' + date_range[0] + '_' + date_range[1]
+    alert_stats = basename + '_stats.txt'
     
     data = np.loadtxt(alert_stats, delimiter=' ')
     
@@ -166,7 +203,7 @@ def display_results(asset_name, year, raster):
     ##    csv file    ##
     ####################
     
-    alert_csv = create_csv(data, aoi_name, glad_dir, year)
+    alert_csv = create_csv(data, aoi_name, glad_dir, date_range)
     csv_btn = wf.DownloadBtn(ms.CSV_BTN, alert_csv)
     
     ##########################
@@ -243,7 +280,7 @@ def display_results(asset_name, year, raster):
     ###########################
     ##      create the map   ##
     ###########################
-    m = display_alerts(asset_name, year)
+    m = display_alerts(asset_name, year, date_range)
     
     #########################
     ##   sum-up layout     ##
@@ -295,7 +332,7 @@ def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     
     return filepath
     
-def create_csv(data, aoi_name, glad_dir, year):
+def create_csv(data, aoi_name, glad_dir, date_range):
     
     Y_conf = data[:,5]
     Y_conf = np.ma.masked_equal(Y_conf,0).compressed()
@@ -323,7 +360,7 @@ def create_csv(data, aoi_name, glad_dir, year):
         header.append('{:d}'.format(int(key)))
         conf.append(conf_dict[key])
     
-    filename = glad_dir + aoi_name + '_' + year + '_distrib.csv'
+    filename = glad_dir + aoi_name + '_' + date_range[0] + '_' + date_range[1] + '_distrib.csv'
     if utils.check_for_file(filename):
         return filename
     
@@ -335,7 +372,7 @@ def create_csv(data, aoi_name, glad_dir, year):
     
     return filename
 
-def display_alerts(aoi_name, year):
+def display_alerts(aoi_name, year, date_range):
     """dipslay the selected alerts on the geemap
     currently re-computing the alerts on the fly because geemap is faster to use ee interface than reading a .tif file
     """
@@ -344,7 +381,8 @@ def display_alerts(aoi_name, year):
     m = utils.init_result_map()
     
     aoi = ee.FeatureCollection(aoi_name)
-    alerts = gee_process.get_alerts(aoi_name, year)
+    alerts_date = gee_process.get_alerts_dates(aoi_name, year, date_range)
+    alerts = gee_process.get_alerts(aoi_name, year, alerts_date)
     alertsMasked = alerts.updateMask(alerts.gt(0));
     
     palette = pm.getPalette()
