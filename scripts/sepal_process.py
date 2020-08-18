@@ -400,6 +400,11 @@ def display_alerts(aoi_name, year, date_range):
                  
     m.centerObject(aoi, zoom=mapping.update_zoom(aoi_name))
     
+    legend_keys = ['potential alerts', 'confirmed alerts']
+    legend_colors = palette[::-1]
+    
+    m.add_legend(legend_keys=legend_keys, legend_colors=legend_colors, position='topleft')
+    
     return m
                  
     
