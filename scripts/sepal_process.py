@@ -222,7 +222,7 @@ def display_results(asset_name, year, date_range, raster):
     Y_prob = np.ma.masked_equal(Y_prob,0).compressed()
     
     x_sc = LinearScale()
-    y_sc = LinearScale()  
+    y_sc = LinearScale()
     
     ax_x = Axis(label='patch size (px)', scale=x_sc)
     ax_y = Axis(label='number of pixels', scale=y_sc, orientation='vertical')  
@@ -271,7 +271,7 @@ def display_results(asset_name, year, date_range, raster):
     ##       create hist      ##
     ############################
     
-    png_link = glad_dir + aoi_name + '_' + year + '_hist.png'
+    png_link = basename + '_hist.png'
     
     title = 'Distribution of the GLAD alerts \nfor {0} in {1}'.format(aoi_name, year)
     png_link = create_png(data_hist, labels, colors, bins, max(maxY4,maxY5), title, png_link)
@@ -325,6 +325,7 @@ def create_png(data_hist, labels, colors, bins, max_, title, filepath):
     plt.xlim(0, max_)
     plt.legend(loc='upper right')
     plt.title(title)
+    plt.yscale('log')
     plt.xlabel('patch size (px)')
     plt.ylabel('number of pixels')
 
