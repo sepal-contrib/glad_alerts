@@ -215,7 +215,7 @@ def display_results(asset_name, year, date_range, raster):
     #need to confirm who's who
     Y_conf = data[:,5]
     Y_conf = np.ma.masked_equal(Y_conf,0).compressed()
-    maxY5 = np.amax(Y_conf)
+    maxY_conf = np.amax(Y_conf)
 
     #null if all the alerts have been confirmed
     Y_prob = data[:,4]
@@ -230,7 +230,7 @@ def display_results(asset_name, year, date_range, raster):
     figs = []
     
     try:
-        maxY4 = np.amax(Y_prob)
+        maxY_prob = np.amax(Y_prob)
         data_hist = [Y_conf, Y_prob]
         colors = pm.getPalette()
         labels = ['confirmed alert', 'potential alert']
@@ -248,7 +248,7 @@ def display_results(asset_name, year, date_range, raster):
             padding_y=0.025
         ))
     except ValueError:  #raised if `Y_prob` is empty.
-        maxY4 = 0
+        maxY_prob = 0
         data_hist = [Y_conf]
         colors = [pm.getPalette()[0]]
         labels = ['confirmed alert']
@@ -274,7 +274,7 @@ def display_results(asset_name, year, date_range, raster):
     png_link = basename + '_hist.png'
     
     title = 'Distribution of the GLAD alerts \nfor {0} in {1}'.format(aoi_name, year)
-    png_link = create_png(data_hist, labels, colors, bins, max(maxY4,maxY5), title, png_link)
+    png_link = create_png(data_hist, labels, colors, bins, max(maxY_conf,maxY_prob), title, png_link)
     png_btn = wf.DownloadBtn(ms.PNG_BTN, png_link)
     
     ###########################
@@ -388,7 +388,7 @@ def display_alerts(aoi_name, year, date_range):
     
     palette = pm.getPalette()
     m.addLayer(alertsMasked, {
-        'bands':['conf' + year[-2:]], 
+        'bands':['conf' + str(year%100)], 
         'min':2, 
         'max':3, 
         'palette': palette[::-1]
