@@ -255,7 +255,18 @@ def display_results(asset_name, year, date_range, raster):
         marks=[bar], 
         axes=[ax_x, ax_y]
     ))
-
+    
+    ##########################################
+    #       clean display when no probale    #
+    ##########################################
+    labels = ['confirmed alert', 'potential alert']
+    data_hist = [y_conf, y_prob]
+    if not year == pm.getLastUpdatedYear():
+        labels = [labels[0]]
+        data_hist = [data_hist[0]]
+        figs = [figs[0]]
+        colors = [colors[0]]
+    
     ############################
     ##       create hist      ##
     ############################
@@ -263,8 +274,6 @@ def display_results(asset_name, year, date_range, raster):
     png_link = basename + '_hist.png'
     
     title = 'Distribution of the GLAD alerts \nfor {0} in {1}'.format(aoi_name, year)
-    labels = ['confirmed alert', 'potential alert']
-    data_hist = [y_conf, y_prob]
     png_link = create_png(
         data_hist, 
         labels, 
