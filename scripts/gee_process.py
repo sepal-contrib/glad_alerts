@@ -6,6 +6,7 @@ from datetime import datetime
 sys.path.append("..") # Adds higher directory to python modules path
 from utils import utils
 from scripts import gdrive
+from utils import parameters as pm
 
 #initialize earth engine
 ee.Initialize()
@@ -68,17 +69,13 @@ def get_alerts_dates(aoi_name, year, date_range):
     """return the julian day map of the glad alerts included between the two dates of date_range"""
     
     aoi = ee.FeatureCollection(aoi_name)
-    all_alerts = ee.ImageCollection('projects/glad/alert/UpdResult')
-    
-    #since the bug of august 2020 I need to remove the images that doesn't contain the 9 bands 
-    def numbands(image):
-        return ee.Algorithms.If(image.bandNames().length().eq(9),image)
-    
-    if year == '2019':
-        all_alerts = all_alerts.map(numbands,True)
+    if year < pm.getLastUpdatedYear():
+        all_alerts = ee.ImageCollection('projects/glad/alert/{}final'.format(year))
+    else:
+        all_alerts = ee.ImageCollection('projects/glad/alert/UpdResult')
         
     #create the composit band alert_date. cannot use the alertDateXX band directly because they are not all caster to the same type
-    dates = all_alerts.select('alertDate{}'.format(year[-2:])).map(
+    dates = all_alerts.select('alertDate{}'.format(year%100)).map(
         lambda image: image.uint16()
     ).mosaic().clip(aoi)
 
@@ -105,16 +102,13 @@ def get_alerts(aoi_name, year, date_masked):
     """
     
     aoi = ee.FeatureCollection(aoi_name)
-    all_alerts  = ee.ImageCollection('projects/glad/alert/UpdResult')
+    if year < pm.getLastUpdatedYear():
+        all_alerts = ee.ImageCollection('projects/glad/alert/{}final'.format(year))
+    else:
+        all_alerts = ee.ImageCollection('projects/glad/alert/UpdResult')
     
-    #since the bug of august 2020 I need to remove the images that doesn't contain the 9 bands 
-    def numbands(image):
-        return ee.Algorithms.If(image.bandNames().length().eq(9),image)
-    
-    if year == '2019':
-        all_alerts = all_alerts.map(numbands,True)
         
-    alerts = all_alerts.select('conf' + year[-2:]).mosaic().clip(aoi);
+    alerts = all_alerts.select('conf' + str(year%100)).mosaic().clip(aoi);
     
     #use the mask of the julian alerts 
     alerts = alerts.updateMask(date_masked.mask())
