@@ -49,7 +49,7 @@ def download_to_disk(filename, image, aoi_name, output):
             task.start()
             download = True
         else:
-            utils.displayIO(output, 'success', ALREADY_COMPLETED.format(filename))
+            output.add_live_msg(ALREADY_COMPLETED.format(filename), 'success')
         
         return download
     
@@ -58,7 +58,7 @@ def download_to_disk(filename, image, aoi_name, output):
         download = launch_task(filename, image, aoi_name, output)
     else:
         if task.state == 'RUNNING':
-            utils.displayIO(output, 'info', TASK_RUNNING.format(filename))
+            output.add_live_msg(TASK_RUNNING.format(filename), 'info')
             download = True
         else: 
             download = launch_task(filename, image, aoi_name, output)
@@ -134,6 +134,6 @@ def gee_process(asset_name, date_range, year, widget_alert):
     # if one of the 2 process have been launch individually it will crash
     if download:
         utils.wait_for_completion([filename, filename_date], widget_alert)
-        utils.displayIO(widget_alert, 'success', TASK_COMPLETED.format(filename)) 
+        widget_alert.add_live_msg(TASK_COMPLETED.format(filename), 'success') 
         
     

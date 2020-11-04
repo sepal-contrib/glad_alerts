@@ -9,12 +9,11 @@ from utils import utils
 from scripts import gdrive
 from threading import Thread
 import ipyvuetify as v
-from sepal_ui.scripts import utils as su
-from sepal_ui import widgetFactory as wf
 from utils import messages as ms
 from scripts import gee_process
 from utils import parameters as pm
-from sepal_ui.scripts import mapping
+from sepal_ui import sepalwidgets as sw
+from sepal_ui import mapping as sm
 import numpy as np
 from bqplot import *
 import matplotlib.pyplot as plt
@@ -72,7 +71,7 @@ def sepal_process(asset_name, year, date_range, output, oft_output):
         (str,str): the links to the .tif (res. .txt) file 
     """
     
-    output_debug = [v.Html(tag="h3", children=['Process outputs'])]
+    oft_output.add_msg(v.Html(tag="h3", children=['Process outputs']))
     
     aoi_name= utils.get_aoi_name(asset_name)
         
@@ -96,12 +95,12 @@ def sepal_process(asset_name, year, date_range, output, oft_output):
     files = drive_handler.get_files(filename)
     
     if files == []:
-        su.displayIO(output, ms.NO_TASK, 'error')
+        output.add_live_msg(ms.NO_TASK, 'error')
         return (None, None)
         
     #check that the process is not already done
     if utils.check_for_file(alert_stats):
-        su.displayIO(output, ms.ALREADY_DONE, 'success')
+        output.add_live_msg(ms.ALREADY_DONE, 'success')
         return (alert_map, alert_stats)
     
     ##############################
@@ -117,17 +116,17 @@ def sepal_process(asset_name, year, date_range, output, oft_output):
         files.append(file)
         
     #run the merge process
-    su.displayIO(output, ms.MERGE_TILE)
+    output.add_live_msg(ms.MERGE_TILE)
     time.sleep(2)
     io = sgdal.merge(files, out_filename=alert_date_tmp_map, v=True, output=oft_output)
-    output_debug.append(v.Html(tag='p', children=[io]))
+    oft_output.append_msg(io)
     
     #delete local files
     for file in files:
         os.remove(file)
     
     #compress raster
-    su.displayIO(output, ms.COMPRESS_FILE)
+    output.add_live_msg(ms.COMPRESS_FILE)
     gdal.Translate(alert_date_map, alert_date_tmp_map, creationOptions=['COMPRESS=LZW'])
     os.remove(alert_date_tmp_map)
     
@@ -148,40 +147,38 @@ def sepal_process(asset_name, year, date_range, output, oft_output):
         files.append(file)
     
     #run the merge process
-    su.displayIO(output, ms.MERGE_TILE)
+    output.add_live_msg(ms.MERGE_TILE)
     time.sleep(2)
     io = sgdal.merge(files, out_filename=alert_tmp_map, v=True, output=oft_output)
-    output_debug.append(v.Html(tag='p', children=[io]))
+    oft_output.append_msg(io)
     
     #delete local files
     for file in files:
         os.remove(file)
     
     #compress raster
-    su.displayIO(output, ms.COMPRESS_FILE)
+    output.add_live_msg(ms.COMPRESS_FILE)
     gdal.Translate(alert_map, alert_tmp_map, creationOptions=['COMPRESS=LZW'])
     os.remove(alert_tmp_map)
     
     #clump the patches together
-    su.displayIO(output, ms.IDENTIFY_PATCH)
+    output.add_live_msg(ms.IDENTIFY_PATCH)
     time.sleep(2)
     io = oft.clump(alert_map, clump_tmp_map, output=oft_output)
-    output_debug.append(v.Html(tag='p', children=[io]))
+    oft_output.append_msg(io)
     
     #compress clump raster
-    su.displayIO(output, ms.COMPRESS_FILE)
+    output.add_live_msg(ms.COMPRESS_FILE)
     gdal.Translate(clump_map, clump_tmp_map, creationOptions=['COMPRESS=LZW'])
     os.remove(clump_tmp_map)
     
     #create the histogram of the patches
-    su.displayIO(output, ms.PATCH_SIZE)
+    output.add_live_msg(ms.PATCH_SIZE)
     time.sleep(2)
     io = oft.his(alert_map, alert_stats, maskfile=clump_map, maxval=3, output=oft_output)
-    output_debug.append(v.Html(tag='p', children=[io]))
+    oft_output.append_msg(io)
     
-    su.displayIO(output, ms.COMPUTAION_COMPLETED, 'success')  
-    
-    oft_output.children = output_debug
+    output.add_live_msg(ms.COMPUTAION_COMPLETED, 'success')  
     
     return (alert_map, alert_stats)
 
@@ -199,14 +196,14 @@ def display_results(asset_name, year, date_range, raster):
     ####################
     ##     tif link   ##
     ####################
-    tif_btn = wf.DownloadBtn(ms.TIF_BTN, raster)
+    tif_btn = sw.DownloadBtn(ms.TIF_BTN, raster)
     
     ####################
     ##    csv file    ##
     ####################
     
     alert_csv = create_csv(df, aoi_name, glad_dir, date_range)
-    csv_btn = wf.DownloadBtn(ms.CSV_BTN, alert_csv)
+    csv_btn = sw.DownloadBtn(ms.CSV_BTN, alert_csv)
     
     ##########################
     ##    create the figs   ##
@@ -283,7 +280,7 @@ def display_results(asset_name, year, date_range, raster):
         title, 
         png_link
     )
-    png_btn = wf.DownloadBtn(ms.PNG_BTN, png_link)
+    png_btn = sw.DownloadBtn(ms.PNG_BTN, png_link)
     
     ###########################
     ##      create the map   ##
@@ -368,7 +365,7 @@ def display_alerts(aoi_name, year, date_range):
     """
     
     #create the map
-    m = utils.init_result_map()
+    m = sm.SepalMap(['Esri.WorldImagery'])
     
     aoi = ee.FeatureCollection(aoi_name)
     alerts_date = gee_process.get_alerts_dates(aoi_name, year, date_range)
@@ -388,7 +385,7 @@ def display_alerts(aoi_name, year, date_range):
     outline = empty.paint(**{'featureCollection': aoi, 'color': 1, 'width': 3})
     m.addLayer(outline, {'palette': '283593'}, 'aoi')
                  
-    m.centerObject(aoi, zoom=mapping.update_zoom(aoi_name))
+    m.zoom_ee_object(aoi.geometry())
     
     legend_keys = ['potential alerts', 'confirmed alerts']
     legend_colors = palette[::-1]
