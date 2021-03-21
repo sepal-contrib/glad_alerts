@@ -1,3 +1,5 @@
+# ⚠️ This functionnality is now included inside the [alert_module](https://github.com/openforis/alert_module) ⚠️
+
 # GLAD alerts module
 
 ## about
